@@ -1,0 +1,16 @@
+{
+    "folders": [
+	    {   
+            "name": "Roblox Photoshop Plugin",
+            "path": "./roblox-photoshop-plugin"
+        },
+        {
+            "name": "Server",
+            "path": "./server"
+        },
+        {
+            "name": "Studio Plugin",
+            "path": "./studio-plugin"
+        }
+    ]
+}

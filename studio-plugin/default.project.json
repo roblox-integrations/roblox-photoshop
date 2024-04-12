@@ -1,0 +1,15 @@
+{
+  "name": "photoshop-sync",
+  "tree": {
+    "$className": "DataModel",
+
+    "ServerScriptService": {
+      "PhotoshopSync": {
+        "$path": "src/PhotoshopSync",
+        "Packages": {
+          "$path": "Packages"
+        }
+      }
+    }
+  }
+}

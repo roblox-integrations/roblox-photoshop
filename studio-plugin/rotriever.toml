@@ -1,0 +1,15 @@
+[package]
+name = "roblox-photoshop-plugin"
+version = "0.1.0"
+publish = true
+authors = ["Sean Dunigan <43707867+Uglypoe@users.noreply.github.com>"]
+
+# Optional fields and their definitions can be found at:
+# https://pages.github.rbx.com/pdoyle/rotriever-docs/reference/manifest-format/#manifest-fields
+
+[dependencies]
+# Different kinds of dependencies are specified in different ways. See more details at:
+# https://pages.github.rbx.com/pdoyle/rotriever-docs/reference/manifest-format/#specifying-manifest-dependencies
+React = "github.com/roblox/roact-alignment@17.0.1"
+ReactRoblox = "github.com/roblox/roact-alignment@17.0.1"
+Cryo = "github.com/roblox/cryo-internal@1.0.3"
