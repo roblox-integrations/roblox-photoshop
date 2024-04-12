@@ -11,7 +11,7 @@ const secureStorage = require('uxp').storage.secureStorage
 const app = require('photoshop').app
 const {shell} = require("uxp");
 
-const VERSION_URL = "https://api.github.com/repositories/REPO_ID/releases/latest"
+const VERSION_URL = "https://api.github.com/repositories/785342744/releases/latest"
 const DOWNLOAD_URL = "https://github.com/roblox-integrations/roblox-photoshop/releases/latest"
 
 export const MainPanel = () => {
