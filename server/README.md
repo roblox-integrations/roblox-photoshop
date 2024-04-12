@@ -1,4 +1,7 @@
-# Unsplash Images Plugin Sample 
+# Roblox Photoshop Plugin Server App 
+
+This serves as a message bus between the Photoshop and Roblox Studio plugins in this repo. 
+
 
 Follow these instructions to set up the server-side for the plugin. 
 ## Install dependencies
@@ -6,7 +9,7 @@ Follow these instructions to set up the server-side for the plugin.
 First ensure that your terminal is in the `plugin` folder of this project. To do this, use: 
 
 ```bash
-cd /uxp-photoshop-plugin-samples/unsplash-plugin-sample/server
+cd /roblox-photoshop/server
 ```
 
 For `yarn` users, install all dependencies using:
@@ -23,20 +26,15 @@ npm install
 
 ## Environment Variables Setup
 
-Next, you need to create a `.env` file containing all the variables. You can check the [.env.sample](./.env.sample) file for this. Enter all variables:
+Next, you need to create a `.env` file containing all the variables. You can check the [.env.sample](./.env.sample) file for this.
 
 ```sh
 {
-        echo 'PORT=8000'
-        echo 'UNSPLASH_ACCESS_KEY='
-
+        echo 'PORT=9531'
 } >> .env
 ```
 
-`PORT` specifies the port your local API server runs on.
-
-Here `UNSPLASH_ACCESS_KEY` needs to be generated using Unsplash Developers panel. Firstly, create a developer account in Unsplash. Then, go to the `Your Apps` option on the navbar and click on the `Create a new application` button. 
-After creating your new application, go under the `Keys` section of the application and copy the `ACCESS_KEY`. 
+`PORT` specifies the port your local server runs on, 9531 is a default value that is also used in Roblox Studio and Photoshop plugins
 
 ## Starting The Project
 
