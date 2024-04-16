@@ -1,0 +1,12 @@
+{
+    "editor.formatOnSave": true,
+    "luau-lsp.sourcemap.autogenerate": false,
+    "[lua]": {
+        "editor.defaultFormatter": "JohnnyMorganz.stylua"
+    },
+    "[luau]": {
+        "editor.defaultFormatter": "JohnnyMorganz.stylua"
+    },
+    "github-enterprise.uri": "https://github.rbx.com",
+    "stylua.disableVersionCheck": true
+}

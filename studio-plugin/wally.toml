@@ -1,0 +1,12 @@
+[package]
+name = "uglypoe/photoshop-studio-plugin"
+version = "0.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "server"
+private = true
+
+[dependencies]
+React = "jsdotlua/react@17.1.0"
+ReactRoblox = "jsdotlua/react-roblox@17.1.0"
+Cryo = "uglypoe/cryo@1.0.3"
+CreateSharedToolbar = "stravant/create-shared-toolbar@0.1.0"
