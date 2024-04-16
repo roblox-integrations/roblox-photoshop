@@ -1,13 +1,16 @@
 {
-  "name": "photoshop-sync",
+  "name": "photoshop-integration",
   "tree": {
     "$className": "DataModel",
-
-    "ServerScriptService": {
-      "PhotoshopSync": {
-        "$path": "src/PhotoshopSync",
-        "Packages": {
-          "$path": "Packages"
+    "PluginDebugService": {
+      "$className": "PluginDebugService",
+      "user_PhotoshopIntegration.rbxmx": {
+        "$className": "Plugin",
+        "PhotoshopIntegration": {
+          "$path": "src/PhotoshopIntegration",
+          "Packages": {
+            "$path": "Packages"
+          }
         }
       }
     }
