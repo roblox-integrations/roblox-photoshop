@@ -1,6 +1,8 @@
-# React Starter Plugin
+# Roblox Photoshop Plugin
 
-This plugin is a good place to get started when building a Photoshop plugin using React. It comes defined with all the dependencies that you'll need to get started. As this is a React project, you'll need to do some initial configuration before this will be usable in Photoshop.
+This is a UXP and React-based Photoshop plugin. 
+
+As this is a React project, you'll need to do some initial configuration before this will be usable in Photoshop.
 
 ## Install dependencies
 
@@ -37,5 +39,5 @@ Once added, you can load it into Photoshop by clicking the ••• button on t
 
 ## What this plugin does
 
-This plugin doesn't do much, but does illustrate how to create two panels in Photoshop with `entrypoints.setup`, and how to create flyout menus. It also demonstrates the use of several Spectrum UXP widgets to create a simple color picker in the primary panel.
+It opens images sent for editing from Roblox Studio Plugin in Photoshop and, when done, creates new Roblox Asset via Open Cloud API and sends them back to Roblox Studio.
 
