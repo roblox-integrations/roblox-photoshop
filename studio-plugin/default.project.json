@@ -1,18 +1,9 @@
 {
-  "name": "photoshop-integration",
+  "name": "PhotoshopIntegration",
   "tree": {
-    "$className": "DataModel",
-    "PluginDebugService": {
-      "$className": "PluginDebugService",
-      "user_PhotoshopIntegration.rbxmx": {
-        "$className": "Plugin",
-        "PhotoshopIntegration": {
-          "$path": "src/PhotoshopIntegration",
-          "Packages": {
-            "$path": "Packages"
-          }
-        }
-      }
+    "$path": "src",
+    "Packages": {
+      "$path": "Packages"
     }
   }
 }
