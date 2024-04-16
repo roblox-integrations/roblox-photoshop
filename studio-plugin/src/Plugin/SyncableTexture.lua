@@ -37,7 +37,7 @@ function SyncableTexture:getSourcePath(source: Instance)
 		sourcePath = sourcePath:sub(1, MAX_NAME_LENGTH - 3) .. "[..]"
 	end
 
-	sourcePath = sourcePath .. "." .. self.state.propertyName
+	sourcePath = sourcePath .. " " .. self.state.propertyName
 
 	return sourcePath
 end
@@ -204,6 +204,7 @@ end
 
 function SyncableTexture:render()
 	local state: StateData = self.state
+	local theme = settings().Studio.Theme
 
 	return React.createElement("Frame", {
 		BackgroundTransparency = 1,
@@ -221,13 +222,13 @@ function SyncableTexture:render()
 		texturePreview = e("ImageLabel", {
 			Size = UDim2.new(0.95, 0, 0.95, 0),
 			BackgroundTransparency = 1,
-			ImageTransparency = 0.5,
+			ImageTransparency = 0,
 			SizeConstraint = Enum.SizeConstraint.RelativeYY,
 			LayoutOrder = 1,
 			Image = if state.imageType == "AssetId" then state.shownImage else "",
 		}, {
 			e("UIAspectRatioConstraint"),
-			e("UICorner"),
+			-- e("UICorner"),
 		}),
 		toSyncDetails = if not self.props.hasPolling
 			then e("Frame", {
@@ -243,24 +244,43 @@ function SyncableTexture:render()
 				}),
 				syncButton = e("TextButton", {
 					Text = "Edit",
-					Size = UDim2.new(0, 150, 0, 50),
-					BackgroundColor3 = Color3.fromRGB(170, 170, 170),
+					AutomaticSize = Enum.AutomaticSize.XY,
+					Size = UDim2.new(0, 0, 0, 0),
+					TextColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogMainButtonText),
+					BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogMainButton),
 					BorderSizePixel = 0,
+					Font = Enum.Font.BuilderSansBold,
+					TextSize = 40,
 					LayoutOrder = 1,
-					TextSize = 30,
 					[React.Event.MouseButton1Click] = function()
 						self:onClickSyncButton()
 					end,
 				}, {
-					e("UICorner"),
+					e("UIPadding", {
+						PaddingLeft = UDim.new(0, 5),
+						PaddingRight = UDim.new(0, 5),
+						PaddingTop = UDim.new(0, 5),
+						PaddingBottom = UDim.new(0, 5),
+					}),
 				}),
 				sourceText = e("TextLabel", {
-					Size = UDim2.new(0, 0, 0, 30),
-					AutomaticSize = Enum.AutomaticSize.X,
+					Size = UDim2.new(0, 0, 0, 0),
+					AutomaticSize = Enum.AutomaticSize.XY,
 					LayoutOrder = 2,
 					Text = self:getSourcePath(state.source),
-					BackgroundColor3 = Color3.fromRGB(170, 170, 170),
+					Font = Enum.Font.BuilderSansMedium,
+					TextSize = 20,
+					TextColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogButtonText),
+					BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogButton),
+					BorderSizePixel = 0,
 					TextXAlignment = Enum.TextXAlignment.Left,
+				}, {
+					e("UIPadding", {
+						PaddingLeft = UDim.new(0, 5),
+						PaddingRight = UDim.new(0, 5),
+						PaddingTop = UDim.new(0, 5),
+						PaddingBottom = UDim.new(0, 5),
+					}),
 				}),
 				-- assetInfoText = e("TextLabel", {
 				--     Size = UDim2.new(0.9, 0, 0, 30),
@@ -297,6 +317,7 @@ function SyncableTexture:render()
 				sourceText = e("TextLabel", {
 					BackgroundTransparency = 1,
 					Size = UDim2.new(0, 0, 0, 30),
+					BorderSizePixel = 0,
 					AutomaticSize = Enum.AutomaticSize.X,
 					LayoutOrder = 2,
 					Text = self:getSourcePath(state.source),
