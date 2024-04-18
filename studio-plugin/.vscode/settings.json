@@ -7,6 +7,5 @@
     "[luau]": {
         "editor.defaultFormatter": "JohnnyMorganz.stylua"
     },
-    "github-enterprise.uri": "https://github.rbx.com",
     "stylua.disableVersionCheck": true
 }
