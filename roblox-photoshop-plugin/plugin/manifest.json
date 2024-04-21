@@ -1,7 +1,7 @@
 {
     "id": "com.github.roblox.integrations",
     "name": "Roblox Studio Photoshop plugin",
-    "version": "1.0",
+    "version": "1.0.0",
     "main": "index.html",
     "manifestVersion": 4,
     "host": {
