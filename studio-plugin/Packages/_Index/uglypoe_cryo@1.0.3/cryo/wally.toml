@@ -1,0 +1,7 @@
+[package]
+name = "uglypoe/cryo"
+version = "1.0.3"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+
+[dependencies]

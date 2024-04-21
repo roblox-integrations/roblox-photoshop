@@ -1,0 +1,25 @@
+{
+  "name": "Cryo",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "Packages": {
+        "$path": "Packages",
+
+        "Cryo": {
+          "$path": "src"
+        }
+      }
+    },
+    "ServerScriptService": {
+      "Tests": {
+        "$path": "tests"
+      }
+    },
+    "Players": {
+      "$properties": {
+        "CharacterAutoLoads": false
+      }
+    }
+  }
+}
