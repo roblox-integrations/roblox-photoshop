@@ -3,7 +3,8 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 
 module.exports = {
   packagerConfig: {
-    osxSign: {},
+    osxSign: {
+    },
     // ...
     osxNotarize: {
       tool: 'notarytool',
@@ -16,14 +17,17 @@ module.exports = {
 
   packagerConfig: {
     asar: true,
+    icon: './images/appIcon'
   },
   rebuildConfig: {},
   makers: [
+    
     {
       name: '@electron-forge/maker-squirrel',
       config: {
         certificateFile: './cert.pfx',
-        certificatePassword: process.env.CERTIFICATE_PASSWORD
+        certificatePassword: process.env.CERTIFICATE_PASSWORD,
+        setupIcon: '/images/appIcon.ico'  
       }
     },
     {
