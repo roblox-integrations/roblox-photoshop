@@ -1,7 +1,8 @@
 {
-  "name": "RobloxIntegrationsHub",
+  "name": "Roblox Integrations Hub",
   "version": "1.0.0",
-  "description": "",
+  "description": "This app connects Roblox Studio with other apps and tools",
+  "authors": "TODO",
   "main": "main.js",
   "scripts": {
     "start": "electron-forge start",

@@ -1,6 +1,8 @@
 
 const { app, BrowserWindow } = require('electron')
 let server = require('./app');
+const shell = require( "electron" ).shell
+
 
 const createWindow = () => {
   const win = new BrowserWindow({
@@ -8,6 +10,10 @@ const createWindow = () => {
     height: 600,
     title: "Roblox Integration Hub"
   })
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url);
+    return { action: 'deny' };
+  });
 
   win.loadFile('index.html')
 }
