@@ -31,13 +31,13 @@ type SessionData = {
 }
 
 function SyncableTexture:getSourcePath(source: Instance)
-	local MAX_NAME_LENGTH = 20
+	local MAX_NAME_LENGTH = 13
 	local sourcePath = source.Name
 	if #sourcePath > MAX_NAME_LENGTH then
-		sourcePath = sourcePath:sub(1, MAX_NAME_LENGTH - 3) .. "[..]"
+		sourcePath = sourcePath:sub(1, MAX_NAME_LENGTH - 3) .. "..."
 	end
 
-	sourcePath = sourcePath .. " " .. self.state.propertyName
+	sourcePath = sourcePath .. " - " .. self.state.propertyName
 
 	return sourcePath
 end
@@ -208,128 +208,88 @@ function SyncableTexture:render()
 
 	return React.createElement("Frame", {
 		BackgroundTransparency = 1,
-		Size = UDim2.new(0, 0, 0, 100),
-		LayoutOrder = self.props.index,
+		Size = UDim2.new(0, 0, 0, 120),
 		AutomaticSize = Enum.AutomaticSize.X,
+		LayoutOrder = self.props.index,
 	}, {
+		uiPadding = e("UIPadding", {
+			PaddingLeft = UDim.new(0, 5),
+			PaddingRight = UDim.new(0, 5),
+			PaddingTop = UDim.new(0, 5),
+			PaddingBottom = UDim.new(0, 5),
+		}),
 		uiListLayout = e("UIListLayout", {
 			Padding = UDim.new(0, 10),
-			HorizontalAlignment = Enum.HorizontalAlignment.Center,
+			HorizontalAlignment = Enum.HorizontalAlignment.Left,
 			VerticalAlignment = Enum.VerticalAlignment.Center,
 			FillDirection = Enum.FillDirection.Horizontal,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 		}),
 		texturePreview = e("ImageLabel", {
-			Size = UDim2.new(0.95, 0, 0.95, 0),
+			Size = UDim2.new(1, 0, 1, 0),
 			BackgroundTransparency = 1,
 			ImageTransparency = 0,
 			SizeConstraint = Enum.SizeConstraint.RelativeYY,
 			LayoutOrder = 1,
 			Image = if state.imageType == "AssetId" then state.shownImage else "",
-		}, {
-			e("UIAspectRatioConstraint"),
-			-- e("UICorner"),
 		}),
-		toSyncDetails = if not self.props.hasPolling
-			then e("Frame", {
-				BackgroundTransparency = 1,
-				Size = UDim2.new(1, -105, 1, 0),
-				LayoutOrder = 2,
-			}, {
-				uiListLayout = e("UIListLayout", {
-					Padding = UDim.new(0, 10),
-					HorizontalAlignment = Enum.HorizontalAlignment.Left,
-					VerticalAlignment = Enum.VerticalAlignment.Center,
-					SortOrder = Enum.SortOrder.LayoutOrder,
-				}),
-				syncButton = e("TextButton", {
-					Text = "Edit",
-					AutomaticSize = Enum.AutomaticSize.XY,
-					Size = UDim2.new(0, 0, 0, 0),
-					TextColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogMainButtonText),
-					BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogMainButton),
-					BorderSizePixel = 0,
-					Font = Enum.Font.BuilderSansBold,
-					TextSize = 40,
-					LayoutOrder = 1,
-					[React.Event.MouseButton1Click] = function()
-						self:onClickSyncButton()
-					end,
-				}, {
-					e("UIPadding", {
-						PaddingLeft = UDim.new(0, 5),
-						PaddingRight = UDim.new(0, 5),
-						PaddingTop = UDim.new(0, 5),
-						PaddingBottom = UDim.new(0, 5),
-					}),
-				}),
-				sourceText = e("TextLabel", {
-					Size = UDim2.new(0, 0, 0, 0),
-					AutomaticSize = Enum.AutomaticSize.XY,
-					LayoutOrder = 2,
-					Text = self:getSourcePath(state.source),
-					Font = Enum.Font.BuilderSansMedium,
-					TextSize = 20,
-					TextColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogButtonText),
-					BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogButton),
-					BorderSizePixel = 0,
-					TextXAlignment = Enum.TextXAlignment.Left,
-				}, {
-					e("UIPadding", {
-						PaddingLeft = UDim.new(0, 5),
-						PaddingRight = UDim.new(0, 5),
-						PaddingTop = UDim.new(0, 5),
-						PaddingBottom = UDim.new(0, 5),
-					}),
-				}),
-				-- assetInfoText = e("TextLabel", {
-				--     Size = UDim2.new(0.9, 0, 0, 30),
-				--     LayoutOrder = 3,
-				--     Text = if state.productInfo then string.format("Asset: %s by %s", state.productInfo.Name or "Unknown", state.productInfo.Creator.Name or "Unknown") else ""
-				-- }),
-			})
-			else nil,
-		toDesyncDetails = if self.props.hasPolling
-			then e("Frame", {
-				BackgroundTransparency = 1,
-				Size = UDim2.new(1, -105, 1, 0),
-				LayoutOrder = 2,
-			}, {
-				uiListLayout = e("UIListLayout", {
-					Padding = UDim.new(0, 10),
-					HorizontalAlignment = Enum.HorizontalAlignment.Left,
-					VerticalAlignment = Enum.VerticalAlignment.Center,
-					SortOrder = Enum.SortOrder.LayoutOrder,
-				}),
-				desyncButton = e("TextButton", {
-					Text = "Stop",
-					Size = UDim2.new(0, 150, 0, 50),
-					BackgroundColor3 = Color3.fromRGB(170, 170, 170),
-					BorderSizePixel = 0,
-					LayoutOrder = 1,
-					TextSize = 30,
-					[React.Event.MouseButton1Click] = function()
+		syncDetails = e("Frame", {
+			BackgroundTransparency = 1,
+			Size = UDim2.new(0, 0, 1, 0),
+			AutomaticSize = Enum.AutomaticSize.X,
+			LayoutOrder = 2,
+		}, {
+			uiListLayout = e("UIListLayout", {
+				Padding = UDim.new(0, 10),
+				HorizontalAlignment = Enum.HorizontalAlignment.Left,
+				VerticalAlignment = Enum.VerticalAlignment.Center,
+				SortOrder = Enum.SortOrder.LayoutOrder,
+			}),
+			syncButton = e("TextButton", {
+				Text = if self.props.hasPolling then "Unlink" else "Edit",
+				AutomaticSize = Enum.AutomaticSize.XY,
+				Size = UDim2.new(0, 0, 0, 0),
+				TextColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogMainButtonText),
+				BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogMainButton),
+				BorderSizePixel = 0,
+				Font = Enum.Font.BuilderSansBold,
+				TextSize = 40,
+				LayoutOrder = 1,
+				[React.Event.MouseButton1Click] = function()
+					if self.props.hasPolling then
 						self:onClickDisconnectButton()
-					end,
-				}, {
-					e("UICorner"),
+					else
+						self:onClickSyncButton()
+					end
+				end,
+			}, {
+				e("UIPadding", {
+					PaddingLeft = UDim.new(0, 5),
+					PaddingRight = UDim.new(0, 5),
+					PaddingTop = UDim.new(0, 5),
+					PaddingBottom = UDim.new(0, 5),
 				}),
-				sourceText = e("TextLabel", {
-					BackgroundTransparency = 1,
-					Size = UDim2.new(0, 0, 0, 30),
-					BorderSizePixel = 0,
-					AutomaticSize = Enum.AutomaticSize.X,
-					LayoutOrder = 2,
-					Text = self:getSourcePath(state.source),
-					TextXAlignment = Enum.TextXAlignment.Left,
+			}),
+			sourceText = e("TextLabel", {
+				Size = UDim2.new(0, 0, 0, 0),
+				AutomaticSize = Enum.AutomaticSize.XY,
+				LayoutOrder = 2,
+				Text = self:getSourcePath(state.source),
+				Font = Enum.Font.BuilderSansMedium,
+				TextSize = 20,
+				TextColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogButtonText),
+				BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.Light),
+				BorderSizePixel = 0,
+				TextXAlignment = Enum.TextXAlignment.Left,
+			}, {
+				e("UIPadding", {
+					PaddingLeft = UDim.new(0, 5),
+					PaddingRight = UDim.new(0, 5),
+					PaddingTop = UDim.new(0, 5),
+					PaddingBottom = UDim.new(0, 5),
 				}),
-				-- assetInfoText = e("TextLabel", {
-				--     Size = UDim2.new(0.9, 0, 0, 30),
-				--     LayoutOrder = 3,
-				--     Text = if state.productInfo then string.format("Asset: %s by %s", state.productInfo.Name or "Unknown", state.productInfo.Creator.Name or "Unknown") else ""
-				-- }),
-			})
-			else nil,
+			}),
+		}),
 	})
 end
 

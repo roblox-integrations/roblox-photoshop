@@ -11,11 +11,13 @@ local StudioSharedToolbar = require(script.Parent.Studio.StudioSharedToolbar)
 local StudioPluginContext = require(script.Parent.Studio.StudioPluginContext)
 local StudioPluginGui = require(script.Parent.Studio.StudioPluginGui)
 local Widget = require(script.Parent.Widget)
+local VersionWarning = require(script.Parent.VersionWarning)
 
 function App:init()
 	self:setState({
 		guiEnabled = false,
 	})
+	VersionWarning:runVersionChecking()
 end
 
 function App:render()
@@ -31,8 +33,8 @@ function App:render()
 
 			initDockState = Enum.InitialDockState.Left,
 			overridePreviousState = false,
-			floatingSize = Vector2.new(260, 200),
-			minimumSize = Vector2.new(260, 200),
+			floatingSize = Vector2.new(250, 200),
+			minimumSize = Vector2.new(250, 200),
 
 			zIndexBehavior = Enum.ZIndexBehavior.Sibling,
 
