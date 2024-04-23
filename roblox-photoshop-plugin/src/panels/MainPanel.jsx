@@ -1,8 +1,11 @@
 import React, {useEffect, useState, useRef} from 'react'
-import {Hello} from "../components/Hello.jsx";
-import {CopyIcon, PlayIcon} from "../components/Icons.jsx"
+import "./MainPanel.css"
+
+import {CopyIcon, PlayIcon, SettingsIcon} from "../components/Icons.jsx"
 
 import {storage} from "uxp"
+import os from "os";
+
 const versions = require('uxp').versions
 
 const { localFileSystem: fs } = require('uxp').storage
@@ -13,16 +16,18 @@ const {shell} = require("uxp");
 
 const VERSION_URL = "https://api.github.com/repositories/785342744/releases/latest"
 const DOWNLOAD_URL = "https://github.com/roblox-integrations/roblox-photoshop/releases/latest"
-
+const TROUBLESHOOT_URL = "https://github.com/roblox-integrations/roblox-photoshop/blob/main/README.md" // TODO link to troubleshooting article
 export const MainPanel = () => {
 
     const downloadUrl = DOWNLOAD_URL
+    const troubleshootUrl = TROUBLESHOOT_URL
+
     const _inputApi = useRef(null)
     const _inputId  = useRef(null)
 
     const [apiToken, setApiToken] = useState("");
     const [userId, setUserId] = useState("");
-
+    const [editCredentials, setEditCredentials] = useState(false)
 
     const [newVersion, setNewVersion] = useState(false);
 
@@ -65,7 +70,6 @@ export const MainPanel = () => {
                 setNewVersion(false)
             }
             console.log("openallactive ", JSON.stringify(sessionToDoc))
-
         } catch (e) {
             console.log("Can't fetch new version")
         }
@@ -73,10 +77,11 @@ export const MainPanel = () => {
     }
     useEffect(() => {
        let fetchCreds = async () => {
+
           const apiToken = await fetchSecureKey("ROBLOX_API_KEY")
           const userId = await fetchSecureKey("ROBLOX_USER_ID")
           console.log("set credentials from wild card effect: ", apiToken, userId)
-
+          setEditCredentials(apiToken === "" || userId === "")
           setApiToken(apiToken)
           setUserId(userId)
           console.log("updated react model")
@@ -84,7 +89,9 @@ export const MainPanel = () => {
       fetchCreds()
       checkForNewVersion()
     }, []);
-
+    useEffect(() => {
+            console.log("editCredentials ", editCredentials )
+        }, [editCredentials])
 
     useEffect(() => {
         // This effect will run whenever the 'count' state changes
@@ -167,7 +174,8 @@ export const MainPanel = () => {
         } catch(e) {
             fileReadOk = "can't read"
         }
-        setMessage("Written to: " + file.nativePath + ', file: '  +fileReadOk);
+        console.log("Written to: " + file.nativePath + ', file: '  +fileReadOk);
+        setMessage("file saved, uploading...");
         return file;
     }
 
@@ -203,7 +211,7 @@ export const MainPanel = () => {
         sessionDetailsJson.outAsset = newAsset
         console.log('saveCurrentSessionAsRobloxAsset: updating the session with newly created asset')
         try {
-            let sessionUpdateResponse = await fetch(process.env.BASE_URL + 'session', {
+            let sessionUpdateResponse = await fetch(getBaseURL() + 'session', {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json"
@@ -246,7 +254,6 @@ export const MainPanel = () => {
     }
 
     const saveAsRobloxAsset = async(assetInfo) => {
-
         try {
             let file = await require("photoshop").core.executeAsModal(writeToFile, {})
             let fileData = await file.read({ format: storage.formats.binary });
@@ -266,7 +273,7 @@ export const MainPanel = () => {
                 displayName: "image from Photoshop",
                 description: "image from Photoshop",
                 creationContext: { creator:
-                        {userId: process.env.ROBLOX_USER_ID }}}))
+                        {userId: userId }}}))
 
             console.log("about to send request", data)
 
@@ -296,14 +303,17 @@ export const MainPanel = () => {
                 let operationUrl= 'https://apis.roblox.com/assets/v1/operations/' + operationId
                 let operationResponse = await fetch(operationUrl, {method: 'GET',
                     headers: {'x-api-key': apiToken}})
-                if(!response.ok) continue
-
+                if(!response.ok)  {
+                   console.log(response.status, operationUrl)
+                   await new Promise((resolve) => {setTimeout(resolve, 200)})
+                   continue
+                }
                 let operationJson = await operationResponse.json()
                 if(operationJson.done) {
                     resultingAssetId  = operationJson.response.assetId
                     break
                 }
-                await new Promise((resolve) => {setTimeout(resolve, 200)})
+                await new Promise((resolve) => {setTimeout(resolve, 400 + (10-operationStatusMaxRetriesLeft)*50)})
             }
 
             if(resultingAssetId === -1) {
@@ -313,7 +323,7 @@ export const MainPanel = () => {
             let imageAssetId = await getImageFromDecal(resultingAssetId)
 
             console.error('TODO Show assets information back to the user, allow to copy assetID')
-            setMessage('It all worked out, the imageAssetId is ' + imageAssetId)
+            setMessage('Done, the image asset ID is ' + imageAssetId)
             return imageAssetId
         } catch (e) {
             setMessage("Saving Error: " + e.code + ", " + e.message);
@@ -455,44 +465,88 @@ export const MainPanel = () => {
 
 return (
         <>
-            {newVersion ? <sp-button  variant="warning" onClick={() => {shell.openExternal(downloadUrl)}}>Download new version from GitHub</sp-button> : <sp-body></sp-body>}
-            <br/>
+            {newVersion ?
 
-            <sp-button variant="cta" onClick={() => saveCurrentSessionAsRobloxAsset()}>
-                Save to Roblox<span slot="icon"><CopyIcon/></span>
-            </sp-button>
-            <br/>
-            <br/>
-            <br/>
-            <sp-button variant="secondary" quiet onClick={() => openAllActiveSessions()}>
-                Open
-            </sp-button>
+                  <sp-body class="well">
+                    <sp-icon name="ui:InfoSmall" size="s"></sp-icon>
+                        New version is available!
+                        <sp-button  onClick={() => {shell.openExternal(downloadUrl)}}>Download from GitHub</sp-button>
+                  </sp-body>
 
+                 : <sp-body></sp-body>}
 
-            <sp-button variant="secondary" quiet onClick={() => {
-                setSessionToDoc({})
-
-                setMessage("Sessions reset")
-            }}>
-                Reset
-            </sp-button>
 
             <br/>
-            <sp-body>Server: {status.server ? 'online' : 'offline'}, Studio plugin: {status.studio ? 'online' : 'offline'}</sp-body>
-            <sp-body size="S">{message}</sp-body>
-
-            {apiToken && userId
+            {!editCredentials
                 ?
-                     <sp-button variant="primary" onClick={() => {setUserId(""); setApiToken("")}}>Change Roblox Credentials</sp-button>
+                     <sp-button quiet variant="secondary" onClick={() => {
+                        setEditCredentials(true)}}>Change Credentials</sp-button>
                 :
                     <>
-                        <sp-textfield id="inputApiToken" type="input" value={apiToken} placeholder="Roblox API Token"/>
+                        {/* the width is a workaround  for UXP bug with text field values being ellipsised   */}
+
+                        <sp-textfield id="inputApiToken" width="450px" multiline value={apiToken}>
+                            <sp-label slot="label">API Key</sp-label>
+                        </sp-textfield>
                         <br/>
-                        <sp-textfield id="inputUserId" type="input" value={userId} placeholder="Roblox User ID"/>
-                        <sp-button variant="primary" onClick={() => {saveCredentials()}}>Save Roblox Credentials</sp-button>
+                        <sp-textfield id="inputUserId" type="input" value={userId}>
+                             <sp-label slot="label">User ID</sp-label>
+                        </sp-textfield>
+                        <br/><br/>
+                        <sp-button variant="primary" onClick={() => {saveCredentials(); setEditCredentials(false)}}>Save</sp-button>
+                        <br/><br/>
                     </>
             }
-            <sp-body>plugin version: {versions.plugin}</sp-body>
+
+            <sp-button variant="cta" onClick={() => saveCurrentSessionAsRobloxAsset()}>
+                Save to Roblox<span slot="icon"></span>
+            </sp-button>
+            <br/>
+
+
+            <sp-body size="S">{message}</sp-body>
+
+            <sp-divider size="medium"></sp-divider>
+
+
+
+
+            <br/>
+
+
+            <div className="table">
+                <div>
+                  <sp-detail>Server: </sp-detail>
+                  <sp-body> {status.server ? 'on' :  <sp-link  onClick={() => {shell.openExternal(troubleshootUrl)}} >Off. Troubleshoot</sp-link> }</sp-body>
+                </div>
+                <div>
+                  <sp-detail>Studio plugin:</sp-detail>
+                  <sp-body>
+                    {status.studio ? 'on' : <sp-link  onClick={() => {shell.openExternal(troubleshootUrl)}} >Off. Troubleshoot</sp-link> }
+                  </sp-body>
+                </div>
+                <div>
+                  <sp-detail>plugin version:</sp-detail>
+                  <sp-body>{versions.plugin}</sp-body>
+                </div>
+                <div>
+                  <sp-body>
+                                          <sp-button variant="secondary" quiet onClick={() => openAllActiveSessions()}>
+                                               Reopen all
+                                          </sp-button>
+
+                                          <sp-button variant="secondary" quiet onClick={() => {
+                                              setSessionToDoc({})
+                                              setMessage("Sessions reset")
+                                          }}>Reset</sp-button>
+
+                  </sp-body>
+                </div>
+
+              </div>
+
+
+
 
 {/*             DEBUGGING CONTROLS */}
             {/*<sp-button variant="primary" onClick={() => openNewDocument()}>*/}
@@ -512,6 +566,8 @@ return (
             {/*<sp-button variant="primary" onClick={() => alert('Not yet!')}>*/}
             {/*    Start a session from asset*/}
             {/*</sp-button>*/}
+
+
 
         </>
 
