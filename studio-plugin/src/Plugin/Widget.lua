@@ -251,60 +251,60 @@ function Widget:render()
 		i += 1
 	end
 
+	local theme = settings().Studio.Theme
+
 	return e("ScrollingFrame", {
 		Size = UDim2.new(1, 0, 1, 0),
 		BackgroundTransparency = 1,
-		CanvasSize = UDim2.new(1, 0, 0, 0),
-		AutomaticCanvasSize = Enum.AutomaticSize.Y,
-		ScrollingDirection = Enum.ScrollingDirection.Y,
+		CanvasSize = UDim2.new(0, 0, 0, 0),
+		AutomaticCanvasSize = Enum.AutomaticSize.XY,
+		ScrollingDirection = Enum.ScrollingDirection.XY,
 	}, {
 		uiListLayout = e("UIListLayout", {
-			Padding = UDim.new(0, 5),
-			HorizontalAlignment = Enum.HorizontalAlignment.Center,
+			Padding = UDim.new(0, 4),
+			HorizontalAlignment = Enum.HorizontalAlignment.Left,
 			SortOrder = Enum.SortOrder.LayoutOrder,
-		}),
-		spacer = e("Frame", {
-			Size = UDim2.new(1, 0, 0, 0),
-			LayoutOrder = 0,
 		}),
 		selected = if hasSessionTextures
 			then e(
 				"Frame",
 				{
-					Size = UDim2.new(1, 0, 0, 0),
+					Size = UDim2.new(0, 0, 0, 0),
 					BackgroundTransparency = 1,
-					AutomaticSize = Enum.AutomaticSize.Y,
+					AutomaticSize = Enum.AutomaticSize.XY,
 					LayoutOrder = 1,
 				},
 				Cryo.Dictionary.join({
 					uiListLayout = e("UIListLayout", {
-						Padding = UDim.new(0, 5),
-						HorizontalAlignment = Enum.HorizontalAlignment.Center,
+						Padding = UDim.new(0, 0),
+						HorizontalAlignment = Enum.HorizontalAlignment.Left,
 						SortOrder = Enum.SortOrder.LayoutOrder,
 					}),
 				}, sessionTextures)
 			)
 			else nil,
-		spacer2 = if hasSessionTextures and hasLockedTextures
+		spacer = if hasSessionTextures and hasLockedTextures
 			then e("Frame", {
-				Size = UDim2.new(1, 0, 0, 5),
-				BackgroundColor3 = Color3.new(),
+				Size = UDim2.new(1, 0, 0, 4),
+				BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.CheckedFieldBorder),
+				BorderSizePixel = 0,
 				LayoutOrder = 2,
 			})
 			else nil,
-		active_edits = if hasLockedTextures
+		activeEdits = if hasLockedTextures
 			then e(
 				"Frame",
 				{
 					Size = UDim2.new(1, 0, 0, 0),
 					BackgroundTransparency = 0.5,
+					BorderSizePixel = 0,
 					AutomaticSize = Enum.AutomaticSize.Y,
 					LayoutOrder = 3,
 				},
 				Cryo.Dictionary.join({
 					uiListLayout = e("UIListLayout", {
-						Padding = UDim.new(0, 5),
-						HorizontalAlignment = Enum.HorizontalAlignment.Center,
+						Padding = UDim.new(0, 4),
+						HorizontalAlignment = Enum.HorizontalAlignment.Left,
 						SortOrder = Enum.SortOrder.LayoutOrder,
 					}),
 				}, lockedTextures)
