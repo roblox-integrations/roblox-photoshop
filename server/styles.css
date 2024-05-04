@@ -1,0 +1,33 @@
+:root {
+    color-scheme: light dark;
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    body { background: #333; color: white; }
+  }
+  
+  @media (prefers-color-scheme: light) {
+    body { background: #ffffff; color: rgb(50, 47, 47); }
+  }
+
+body {
+  font-size: 14pt;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; 
+
+}
+.messageBox {
+  text-align: center;
+  padding: 1rem;
+  background-color: salmon;
+  font-size: 19pt;
+  color: white;
+
+}
+.messageBox a {
+  color: white;
+  font-weight: bold;
+}
+.status {
+  display: flex;
+  font-size: 12pt;
+}

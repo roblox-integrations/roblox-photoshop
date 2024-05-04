@@ -4,11 +4,16 @@
   "description": "This app connects Roblox Studio with other apps and tools",
   "authors": "TODO",
   "main": "main.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/https://github.com/roblox-integrations/roblox-photoshop.git"
+  },
   "scripts": {
     "start": "electron-forge start",
     "test": "echo \"Error: no test specified\" && exit 1",
     "package": "electron-forge package",
-    "make": "electron-forge make"
+    "make": "electron-forge make",
+    "publish": "electron-forge publish"
   },
   "author": "",
   "license": "MIT",
@@ -20,6 +25,7 @@
     "@electron-forge/maker-zip": "^7.4.0",
     "@electron-forge/plugin-auto-unpack-natives": "^7.4.0",
     "@electron-forge/plugin-fuses": "^7.4.0",
+    "@electron-forge/publisher-github": "^7.4.0",
     "@electron/fuses": "^1.8.0",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
@@ -36,6 +42,7 @@
     "express": "^4.17.1",
     "multer": "^1.4.5-lts.1",
     "node-fetch": "2.0.0",
-    "nodemon": "^2.0.3"
+    "nodemon": "^2.0.3",
+    "update-electron-app": "^3.0.0"
   }
 }

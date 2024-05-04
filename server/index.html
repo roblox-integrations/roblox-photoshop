@@ -1,21 +1,131 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8" />
-    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'"
-    />
-    <meta
-      http-equiv="X-Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'"
-    />
+<head>
+    <meta charset="UTF-8">
     <title>Roblox Integrations Hub</title>
-  </head>
-  <body>
-    <h1>Roblox Integrations Hub</h1>
-    <p>This app connects Roblox Studio with other apps. For example, with <a target="_blank" href="https://github.com/roblox-integrations/roblox-photoshop">Photoshop</a>.</p>
-    <p>Please keep it running so the apps can talk to each other!</p>
-  </body>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+    <link rel="stylesheet" type="text/css" href="./styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+  
+  <h1>Roblox Integrations Hub</h1>
+
+  <div id="updateMessage" class="messageBox" style="display: none;">New version is available. <a target="_blank" href="https://github.com/roblox-integrations/roblox-photoshop/releases/latest">Download it from GitHub</a></div>
+  <p>👋 This app connects Roblox Studio with Adobe Photoshop for easier image editing on Roblox. Other apps integrations are coming in the future!</p>
+  <p>➡️ Getting started: 
+    <ul>
+      <li>Download <a href="" id="btnInstallStudioPlugin">Roblox Studio Plugin</a> and move it to plugins folder(<a target="_blank" href="https://github.com/roblox-integrations/roblox-photoshop">see how</a>)</li> 
+      <li>Download <a id="btnInstallPhotoshopPlugin" href="">Photoshop Plugin</a>(double click to install) </li>
+      <li><a href="https://github.com/roblox-integrations/roblox-photoshop/" target="_blank">Check out the documentation</a></li>
+      <li>Keep this app running, so the plugins can talk to each other.</li>
+    </ul>      
+  </p>
+  <p>For bug reports, feature requests and feedback, please <a target="_blank" href="https://github.com/roblox-integrations/roblox-photoshop/issues">post an issue on GitHub</a>.</p>
+  <h3>System Status</h3>
+  <div class="status">
+      <span>Studio Plugin: </span>
+        <span id="studioOnline" style="display:none"> 🟢 Online </span>
+        <span id="studioOffline" style="display:none"> 🔴 Offline. Launch Studio and open or install(see 'getting started' above) the plugin?</a></span>
+  </div>
+  <div class="status">
+    <span>Photoshop Plugin: </span>
+    <span id="photoshopOnline" style="display:none"> 🟢 Online </span>
+    <span id="photoshopOffline" style="display:none"> 🔴 Offline. Launch Photoshop and  and open or install(see 'getting started' above) plugin? </span>
+  </div>
+  <script src="./renderer.js"></script>
+
+  <script>
+
+    const params = new URLSearchParams(document.location.search);
+    const version = params.get("version"); 
+    
+    //test
+    //const VERSION_URL = "https://api.github.com/repositories/782732905/releases/latest"
+
+    // prod
+    const VERSION_URL = "https://api.github.com/repositories/785342744/releases/latest"
+    const DOWNLOAD_URL = "https://github.com/roblox-integrations/roblox-photoshop/releases/latest"
+
+    const checkForNewVersion = async  () => {
+        try {
+            console.log("Checking for new version")
+
+            let checkNewVersionResponse = await fetch(VERSION_URL, {
+                method: 'GET',
+                headers: {
+                    "Content-Type": "application/json"
+                    }
+            })
+            if (checkNewVersionResponse.ok) {
+                let json = await checkNewVersionResponse.json()
+                console.log("new versions:", version !== json.name, version, json.name)
+                const newVersion = version !== json.name
+                if(newVersion) {
+                  document.getElementById("updateMessage").style.display = "block"
+                } else {
+                  document.getElementById("updateMessage").style.display = "none"
+                }
+            } else {
+                console.log("Response error", checkNewVersionResponse.status)
+            }
+        } catch (e) {
+            console.log("Can't fetch new version")
+        }
+
+    }
+    checkForNewVersion()
+
+    setInterval(checkForNewVersion, 60*60*1000)
+
+
+    const setStatus = (status) => {
+      const studioOff = document.getElementById("studioOffline")
+      const studioOn = document.getElementById("studioOnline")
+      const photoshopOn = document.getElementById("photoshopOnline")
+      const photoshopOff = document.getElementById("photoshopOffline")
+      
+      studioOff.style.display = !status.studio ?  "block" : "none"
+      studioOn.style.display = status.studio ?  "block" : "none"
+      photoshopOff.style.display = !status.photoshop ?  "block" : "none"
+      photoshopOn.style.display = status.photoshop ?  "block" : "none"
+    }
+
+    const heartbeat = async  () => {
+        try {
+            // TODO MI: move port to parameters
+            let heartbeatResponse = await fetch('http://localhost:9531/' + 'heartbeat', {
+                method: 'GET',
+                headers: {
+                    "Content-Type": "application/json"
+                }
+                })
+            if (heartbeatResponse.ok) {
+                let json = await heartbeatResponse.json()
+                const status = {studio: json.studio, photoshop: json.photoshop}
+                console.log(JSON.stringify(status))
+                setStatus(status)
+            } else {
+              const status = {studio: false, photoshop: false}
+              console.log(JSON.stringify(status))
+              setStatus(status)
+            }
+            //console.log("openallactive ", JSON.stringify(sessionToDoc))
+
+        } catch (e) {
+            console.log("Can't fetch hearbeat")
+            const status = {studio: false, photoshop: false}
+            console.log(JSON.stringify({studio: false, photoshop: false}))
+            setStatus(status)
+        }
+
+        // cleanup sessions for closed docs
+        //let keys = getSessions().keys()
+    }
+
+    setInterval(heartbeat, 1000)
+
+  </script>
+
+</body>
 </html>

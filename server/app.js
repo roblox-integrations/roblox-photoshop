@@ -21,6 +21,7 @@
         app.use("/", routes);
 
         let port = process.env.PORT || 9531
+        
         app.listen(port, () => {
             console.log(`App listening on port ${port}`);
         });

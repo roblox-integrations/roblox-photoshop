@@ -34,14 +34,28 @@ module.exports = {
       name: '@electron-forge/maker-zip',
       platforms: ['darwin'],
     },
+    // {
+    //   name: '@electron-forge/maker-deb',
+    //   config: {},
+    // },
+    // {
+    //   name: '@electron-forge/maker-rpm',
+    //   config: {},
+    // },
+  ],
+  publishers: [
     {
-      name: '@electron-forge/maker-deb',
-      config: {},
-    },
-    {
-      name: '@electron-forge/maker-rpm',
-      config: {},
-    },
+      name: '@electron-forge/publisher-github',
+      config: {
+        repository: {
+          owner: 'mxxnsk',
+          name: 'testReleases'
+        },
+        draft: true,
+        prerelease: false,
+        generateReleaseNotes: true
+      }
+    }
   ],
   plugins: [
     {
