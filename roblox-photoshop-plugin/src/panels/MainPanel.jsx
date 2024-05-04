@@ -69,7 +69,6 @@ export const MainPanel = () => {
             } else {
                 setNewVersion(false)
             }
-            console.log("openallactive ", JSON.stringify(sessionToDoc))
         } catch (e) {
             console.log("Can't fetch new version")
         }
@@ -376,7 +375,7 @@ export const MainPanel = () => {
         try {
             await require("photoshop").core.executeAsModal(addNewDocument, {})
             } catch (e) {
-             setMessage("Error: " + e.code + ", " + e.message);
+             setMessage("Error opening a document; " + e.code + ", " + e.message);
              console.error("error opening file: ", e);
         }
     }
@@ -394,7 +393,7 @@ export const MainPanel = () => {
             await file.write(img);
             return await require('photoshop').core.executeAsModal(() => {return openDocumentFromFile(file)}, {})
         } catch (e) {
-            setMessage("Error: " + e.code + ", " + e.message);
+            setMessage("Error fetching asset info, Hub is not running? " + e.code + ", " + e.message);
             console.error("URL: " + url)
             console.error("error opening file from server: ", e);
         }
@@ -436,7 +435,7 @@ export const MainPanel = () => {
             }
             setSessionToDoc(sessionToDocCopy)
         } catch (e) {
-            setMessage("Error: " + e.code + ", " + e.message);
+            setMessage("Error opening active sessions, Hub app is not running?" + e.code + ", " + e.message);
             console.error("error opening file from server: ", e);
         }
     }
@@ -516,7 +515,7 @@ return (
 
             <div className="table">
                 <div>
-                  <sp-detail>Server: </sp-detail>
+                  <sp-detail>Hub: </sp-detail>
                   <sp-body> {status.server ? 'on' :  <sp-link  onClick={() => {shell.openExternal(troubleshootUrl)}} >Off. Troubleshoot</sp-link> }</sp-body>
                 </div>
                 <div>

@@ -30,7 +30,7 @@ const moreDemosController = new PanelController(() => <MainPanel />, {
     },
     {
       id: "dialog1",
-      label: "Roblox Account Details",
+      label: "About",
       enabled: true,
       checked: false,
       oninvoke: () => aboutController.run(),

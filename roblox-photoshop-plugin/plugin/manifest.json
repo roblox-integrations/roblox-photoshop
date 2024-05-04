@@ -10,13 +10,6 @@
     },
     "entrypoints": [
         {
-            "type": "command",
-            "id": "showAbout",
-            "label": {
-                "default": "About React Demo"
-            }
-        },
-        {
             "type": "panel",
             "id": "moreDemos",
             "label": {
