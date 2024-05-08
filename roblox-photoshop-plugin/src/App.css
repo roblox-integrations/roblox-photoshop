@@ -24,7 +24,7 @@
     margin-right: 0;
 }
 
-.aboutDialog .well {
+.well {
     border-radius: 8px;
     width: 100%;
     background-color: #095aba;
@@ -34,13 +34,13 @@
     color: #e1e1e1;
 }
 
-.aboutDialog .well sp-icon {
+.well sp-icon {
     position: absolute;
     top: 18px;
     left: 16px;
 }
 
-.aboutDialog .table {
+.table {
     display: flex;
     flex-direction: column;
     background-color: #00000025;
@@ -48,7 +48,7 @@
     border-radius: 4px;
 }
 
-.aboutDialog .table div {
+.table div {
     flex: 1 1 auto;
     display: flex;
     flex-direction: row;
@@ -60,17 +60,18 @@
     background-color: #00000025;
 }
 
-.aboutDialog .table div sp-detail {
+.table div sp-detail {
     text-align: right;
-    flex: 0 0 66%;
+    flex: 0 0 29%;
     padding-top: 2px;
     margin-right: 1em;
 }
 
-.aboutDialog .table div sp-body {
+.table div sp-body {
     flex: 1 1 auto;
 }
 
-.aboutDialog code {
+code {
     font-family: 'Menlo', 'Courier New', Courier, monospace
 }
+
