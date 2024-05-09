@@ -1,0 +1,52 @@
+{
+  "id": "com.github.roblox.integrations",
+  "name": "Roblox Photoshop plugin",
+  "version": "1.0.0",
+  "main": "index.html",
+  "manifestVersion": 5,
+  "featureFlags": {
+    "enableSWCSupport": true
+  },
+  "entrypoints": [
+    {
+      "type": "panel",
+      "id": "vanilla",
+      "label": {
+        "default": "Main Window"
+      },
+      "minimumSize": {
+        "width": 230,
+        "height": 200
+      },
+      "maximumSize": {
+        "width": 2000,
+        "height": 2000
+      },
+      "preferredDockedSize": {
+        "width": 230,
+        "height": 300
+      },
+      "preferredFloatingSize": {
+        "width": 230,
+        "height": 300
+      }
+    }
+  ],
+  "host": [
+    {
+      "app": "PS",
+      "minVersion": "23.3.0"
+    }
+  ], 
+   "requiredPermissions": {
+        "launchProcess": { 
+          "schemes": ["https", "mailto", "file"], 
+          "extensions": [".pdf"]
+        }, 
+        "network": { "domains": ["http://localhost", "https://api.github.com", "https://apis.roblox.com", "https://assetdelivery.roblox.com"] },
+        "allowCodeGenerationFromStrings": true,
+        "localFileSystem": "plugin",
+        "clipboard": "read"
+    }
+}
+

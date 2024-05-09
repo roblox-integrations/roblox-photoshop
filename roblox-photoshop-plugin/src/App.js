@@ -1,7 +1,7 @@
-import React, {useEffect, useState, useRef} from 'react'
-import "./MainPanel.css"
 
-import {CopyIcon, PlayIcon, SettingsIcon} from "../components/Icons.jsx"
+import React, {useEffect, useState, useRef} from 'react'
+import "./App.css"
+
 
 import {storage} from "uxp"
 import os from "os";
@@ -17,7 +17,7 @@ const {shell} = require("uxp");
 const VERSION_URL = "https://api.github.com/repositories/785342744/releases/latest"
 const DOWNLOAD_URL = "https://github.com/roblox-integrations/roblox-photoshop/releases/latest"
 const TROUBLESHOOT_URL = "https://github.com/roblox-integrations/roblox-photoshop/blob/main/README.md" // TODO link to troubleshooting article
-export const MainPanel = () => {
+const App = () => {
 
     const downloadUrl = DOWNLOAD_URL
     const troubleshootUrl = TROUBLESHOOT_URL
@@ -27,6 +27,8 @@ export const MainPanel = () => {
 
     const [apiToken, setApiToken] = useState("");
     const [userId, setUserId] = useState("");
+    const [resultAssetId, setResultAssetId] = useState("")
+
     const [editCredentials, setEditCredentials] = useState(false)
 
     const [newVersion, setNewVersion] = useState(false);
@@ -323,6 +325,8 @@ export const MainPanel = () => {
 
             console.error('TODO Show assets information back to the user, allow to copy assetID')
             setMessage('Done, the image asset ID is ' + imageAssetId)
+            setResultAssetId(imageAssetId)
+
             return imageAssetId
         } catch (e) {
             setMessage("Saving Error: " + e.code + ", " + e.message);
@@ -505,6 +509,13 @@ return (
 
             <sp-body size="S">{message}</sp-body>
 
+            {resultAssetId 
+                ? 
+                <sp-button id="copyResultAssetIdBtn" variant="secondary" quiet onClick={()=>{ navigator.clipboard.setContent({"text/plain": resultAssetId})}}>Copy asset id</sp-button>
+                : <></>
+
+            }
+
             <sp-divider size="medium"></sp-divider>
 
 
@@ -519,13 +530,13 @@ return (
                   <sp-body> {status.server ? 'on' :  <sp-link  onClick={() => {shell.openExternal(troubleshootUrl)}} >Off. Troubleshoot</sp-link> }</sp-body>
                 </div>
                 <div>
-                  <sp-detail>Studio plugin:</sp-detail>
+                  <sp-detail>Studio:</sp-detail>
                   <sp-body>
                     {status.studio ? 'on' : <sp-link  onClick={() => {shell.openExternal(troubleshootUrl)}} >Off. Troubleshoot</sp-link> }
                   </sp-body>
                 </div>
                 <div>
-                  <sp-detail>plugin version:</sp-detail>
+                  <sp-detail>version:</sp-detail>
                   <sp-body>{versions.plugin}</sp-body>
                 </div>
                 <div>
@@ -573,3 +584,10 @@ return (
 
     );
 }
+
+
+
+
+
+
+export default App;
