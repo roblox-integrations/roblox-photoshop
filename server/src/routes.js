@@ -51,13 +51,45 @@
             // });
 
 
+            const DECAL_CAPTURE_REGEX = new RegExp(
+                '<Content name="Texture">\\s*<url>[^0-9]+(\\d+)</url>\\s*</Content>',
+            );
+        
+            const getImageFromDecal = async (decalId) => {
+                let  response = await fetch('https://assetdelivery.roblox.com/v1/asset/?id='+ decalId)
+                if(!response.ok) {
+                    throw new Error('Cant fetch decal')
+                }
+                
+                let text = await response.text()
+                console.log("fetched..", text)
+                const match = DECAL_CAPTURE_REGEX.exec(text);
+                if (match == null) {
+                    throw new Error('Failed to get contentId from asset' + text);
+                }
+                console.log("mateched..")
+                const imageId = parseInt(match[1]);
+                if (typeof imageId != 'number') {
+                    console.log("failed to parse", imageId)
+                    throw new Error('Failed to parse imageId');
+                }
+                return imageId
+            }
+
+            router.get("/imageIdFromAssetId/:assetId", async(req, res) => {
+                const result = await getImageFromDecal(req.params.assetId)
+                console.log("image id = ", result)
+                res.status(200)
+                res.send(""+result)    
+
+            })
             // Heartbeat
             router.get("/heartbeat", async (req, res) => {
-            res.json(model().hearbeat);
+                res.json(model().hearbeat)
             });
 
             router.post("/heartbeat", async (req, res) => {
-            console.log("Set for plugin: ", req.body.plugin);
+            console.log("Set for plugin: ", req.body.plugin, "User-agent: ", req.headers['user-agent'])
             if (!(req.body.plugin === "photoshop") && !(req.body.plugin === "studio") ) {
                 res.status(400);
             }
