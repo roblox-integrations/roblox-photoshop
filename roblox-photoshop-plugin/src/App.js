@@ -95,8 +95,6 @@ const App = () => {
         }, [editCredentials])
 
     useEffect(() => {
-        // This effect will run whenever the 'count' state changes
-        console.log("sessionToDoc has changed!: ", sessionToDoc);
     }, [sessionToDoc]);
 
 
@@ -107,7 +105,6 @@ const App = () => {
 
     const getBaseURL = () => {
         let baseUrl =  !process.env.BASE_URL ? "http://localhost:9531/" : process.env.BASE_URL
-        console.log("BASE_URL", baseUrl)
         return baseUrl
     }
 
@@ -127,7 +124,6 @@ const App = () => {
             } else {
                 setStatus({studio: false, server: false})
             }
-            console.log("openallactive ", JSON.stringify(sessionToDoc))
 
         } catch (e) {
             console.log("Can't fetch hearbeat")
@@ -190,43 +186,48 @@ const App = () => {
             }
         }
 
-        if(sessionId === undefined) {
-            console.error("sessionId not found for the document")
-            throw new Error("sessionId not found for the document")
-        }
-        console.log('fetching details for sessionId', sessionId)
-        let sessionDetailsResponse = await fetch(getBaseURL() + 'session?sessionId='+sessionId )
-        if(!sessionDetailsResponse.ok) {
-            console.error("can't fetch session details for sessionId ", sessionId)
-            throw new Error("can't fetch session details for sessionId " +  sessionId)
-        }
-        console.log('saveCurrentSessionAsRobloxAsset: fetching session details json')
-        let sessionDetailsJson = await sessionDetailsResponse.json()
-        console.log('saveCurrentSessionAsRobloxAsset: parsed session details json')
-
-        let assetId = await saveAsRobloxAsset(sessionDetailsJson.asset)
-
-
-        let newAsset = JSON.parse(JSON.stringify(sessionDetailsJson.asset))
-        newAsset.assetId = assetId;
-        sessionDetailsJson.outAsset = newAsset
-        console.log('saveCurrentSessionAsRobloxAsset: updating the session with newly created asset')
-        try {
-            let sessionUpdateResponse = await fetch(getBaseURL() + 'session', {
-                method: 'POST',
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(sessionDetailsJson)
-            })
-            if (!sessionUpdateResponse.ok) {
-                console.error("can't update session details for sessionId ", sessionId)
+        let assetId = -1;
+        if(sessionId !== undefined) { // replacing existing assets in open place in Studio
+            console.log('fetching details for sessionId', sessionId)
+            let sessionDetailsResponse = await fetch(getBaseURL() + 'session?sessionId='+sessionId )
+            if(!sessionDetailsResponse.ok) {
+                console.error("can't fetch session details for sessionId ", sessionId)
+                throw new Error("can't fetch session details for sessionId " +  sessionId)
             }
-            let sessionUpdateJson = await sessionUpdateResponse.json()
-            console.log('saveCurrentSessionAsRobloxAsset: the session after update: ', sessionUpdateJson)
-        } catch (e) {
-            console.error("error updating the session", e)
+            console.log('saveCurrentSessionAsRobloxAsset: fetching session details json')
+            let sessionDetailsJson = await sessionDetailsResponse.json()
+            console.log('saveCurrentSessionAsRobloxAsset: parsed session details json')
+            assetId = await saveAsRobloxAsset(sessionDetailsJson.asset)
+            let newAsset = JSON.parse(JSON.stringify(sessionDetailsJson.asset))
+            newAsset.assetId = assetId;
+            sessionDetailsJson.outAsset = newAsset
+            console.log('saveCurrentSessionAsRobloxAsset: updating the session with newly created asset')
+            try {
+                let sessionUpdateResponse = await fetch(getBaseURL() + 'session', {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(sessionDetailsJson)
+                })
+                if (!sessionUpdateResponse.ok) {
+                    console.error("can't update session details for sessionId ", sessionId)
+                }
+                let sessionUpdateJson = await sessionUpdateResponse.json()
+                console.log('saveCurrentSessionAsRobloxAsset: the session after update: ', sessionUpdateJson)
+            } catch (e) {
+                console.error("error updating the session", e)
+            }
+        } else { // upload new asset 
+            console.log('Saving new asset w/o a session..')
+            assetId = await saveAsRobloxAsset({})
+            console.log('Saved new asset w/o a session, ', assetId)
         }
+
+
+        
+
+
 
     }
 
@@ -508,7 +509,7 @@ return (
 
             {resultAssetId 
                 ? 
-                <sp-button id="copyResultAssetIdBtn" variant="secondary" quiet onClick={()=>{ navigator.clipboard.setContent({"text/plain": resultAssetId})}}>Copy asset id</sp-button>
+                <sp-button id="copyResultAssetIdBtn" variant="secondary" quiet onClick={()=>{ navigator.clipboard.setContent({"text/plain": ""+ resultAssetId})}}>Copy asset id</sp-button>
                 : <></>
 
             }

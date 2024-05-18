@@ -55,7 +55,7 @@
         "network": { "domains": ["http://localhost", "https://api.github.com", "https://apis.roblox.com", "https://assetdelivery.roblox.com"] },
         "allowCodeGenerationFromStrings": true,
         "localFileSystem": "plugin",
-        "clipboard": "read"
+        "clipboard": "readAndWrite"
     },
   "icons": [
       {
