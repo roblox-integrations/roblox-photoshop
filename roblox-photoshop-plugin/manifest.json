@@ -29,7 +29,16 @@
       "preferredFloatingSize": {
         "width": 230,
         "height": 300
-      }
+      }, 
+      "icons": [
+        {
+            "width": 23, "height": 23, "path": "icons/dark-panel.png", "scale": [ 1, 2 ],
+            "theme": [ "darkest", "dark", "medium" ], "species": [ "chrome" ]
+        }, {
+            "width": 23, "height": 23, "path": "icons/light-panel.png", "scale": [ 1, 2 ],
+            "theme": [ "lightest", "light" ], "species": [ "chrome" ]
+        }
+        ]      
     }
   ],
   "host": [
@@ -47,6 +56,13 @@
         "allowCodeGenerationFromStrings": true,
         "localFileSystem": "plugin",
         "clipboard": "read"
-    }
+    },
+  "icons": [
+      {
+          "width": 48, "height": 48, "path": "icons/plugin.png", "scale": [ 1, 2 ],
+          "theme": [ "darkest", "dark", "medium", "lightest", "light", "all" ],
+          "species": [ "pluginList" ]
+      }
+  ]  
 }
 

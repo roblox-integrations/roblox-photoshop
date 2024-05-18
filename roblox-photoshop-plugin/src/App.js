@@ -231,25 +231,22 @@ const App = () => {
     }
 
 
-    const DECAL_CAPTURE_REGEX = new RegExp(
-        '<Content name="Texture">\\s*<url>[^0-9]+(\\d+)</url>\\s*</Content>',
-    );
-
+    // fetch via hub as Windows UXP doesn't support gzip :)
     const getImageFromDecal = async (decalId) => {
-        let  response = await fetch('https://assetdelivery.roblox.com/v1/asset/?id='+ decalId)
+
+        let url = getBaseURL() + 'imageIdFromAssetId/'+ decalId
+            
+        let  response = await fetch(url)
         if(!response.ok) {
-            throw new Error('Cant fetch decal')
+            throw new Error('Cant fetch imageId')
         }
         let text = await response.text()
-        const match = DECAL_CAPTURE_REGEX.exec(text);
-        if (match == null) {
-            throw new Error('Failed to get contentId from asset');
-        }
 
-        const imageId = parseInt(match[1]);
+        const imageId = parseInt(text);
         if (typeof imageId != 'number') {
             throw new Error('Failed to parse imageId');
         }
+
 
         return imageId
     }
@@ -496,7 +493,7 @@ return (
                              <sp-label slot="label">User ID</sp-label>
                         </sp-textfield>
                         <br/><br/>
-                        <sp-button variant="primary" onClick={() => {saveCredentials(); setEditCredentials(false)}}>Save</sp-button>
+                        <sp-button variant="primary" onClick={() => {saveCredentials(); setEditCredentials(false)}}>Save Credentials</sp-button>
                         <br/><br/>
                     </>
             }
