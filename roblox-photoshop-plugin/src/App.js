@@ -17,6 +17,8 @@ const {shell} = require("uxp");
 const VERSION_URL = "https://api.github.com/repositories/785342744/releases/latest"
 const DOWNLOAD_URL = "https://github.com/roblox-integrations/roblox-photoshop/releases/latest"
 const TROUBLESHOOT_URL = "https://github.com/roblox-integrations/roblox-photoshop/blob/main/README.md" // TODO link to troubleshooting article
+const ROBLOX_API_KEY = "ROBLOX_API_KEY"
+const ROBLOX_USER_ID = "ROBLOX_USER_ID"
 const App = () => {
 
     const downloadUrl = DOWNLOAD_URL
@@ -45,11 +47,16 @@ const App = () => {
 
     async function fetchSecureKey(key) {
       // We get the stored value from the secureStorage in the form of a uint8Array.
-      const uintArray = await secureStorage.getItem(key);
-      // We convert the uint8Array to a string to present it to the user.
-      let secureKey = "";
-      for (let i of uintArray) secureKey += String.fromCharCode(i);
-      return secureKey
+      try{
+        const uintArray = await secureStorage.getItem(key);
+        // We convert the uint8Array to a string to present it to the user.
+        let secureKey = "";
+        for (let i of uintArray) secureKey += String.fromCharCode(i);
+        return secureKey
+      } catch (e) {
+            console.log("fetchSecureKeyError for ", key, e)
+            return ""
+      }
     }
 
 
@@ -78,14 +85,13 @@ const App = () => {
     }
     useEffect(() => {
        let fetchCreds = async () => {
-
-          const apiToken = await fetchSecureKey("ROBLOX_API_KEY")
-          const userId = await fetchSecureKey("ROBLOX_USER_ID")
-          console.log("set credentials from wild card effect: ", apiToken, userId)
-          setEditCredentials(apiToken === "" || userId === "")
-          setApiToken(apiToken)
-          setUserId(userId)
-          console.log("updated react model")
+            const apiToken = await fetchSecureKey(ROBLOX_API_KEY)
+            const userId = await fetchSecureKey(ROBLOX_USER_ID)
+            console.log("set credentials from wild card effect: ", apiToken, userId)
+            setEditCredentials(!apiToken || !userId)
+            setApiToken(apiToken)
+            setUserId(userId)
+            console.log("updated react model")
       }
       fetchCreds()
       checkForNewVersion()
@@ -448,8 +454,8 @@ const App = () => {
         const userId  = document.getElementById("inputUserId").value
 
         try {
-            await secureStorage.setItem("ROBLOX_API_KEY", apiToken)
-            await secureStorage.setItem("ROBLOX_USER_ID", userId)
+            await secureStorage.setItem(ROBLOX_API_KEY, apiToken)
+            await secureStorage.setItem(ROBLOX_USER_ID, userId)
             setApiToken(apiToken)
             setUserId(userId)
             console.log("Credentials saved!")
