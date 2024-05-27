@@ -62,6 +62,7 @@
                 console.log("new versions:", version !== json.name, version, json.name)
                 const newVersion = version !== json.name
                 if(newVersion) {
+                  alert('A new version is a available')
                   document.getElementById("updateMessage").style.display = "block"
                 } else {
                   document.getElementById("updateMessage").style.display = "none"
