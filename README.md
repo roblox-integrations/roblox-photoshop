@@ -1,5 +1,5 @@
-# About
-Roblox Photoshop connects Adobe Photoshop to Roblox Studio for seamless image editing. 
+# About 
+Roblox Photoshop is the first integration of [Roblox Integration Hub](https://github.com/roblox-integrations/roblox-photoshop?tab=readme-ov-file#whats-roblox-integration-hub), which connects Adobe Photoshop to Roblox Studio for seamless image editing. 
 
 # How it works 
 There are two main scenarios: 
