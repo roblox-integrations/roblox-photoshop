@@ -12,10 +12,10 @@ There are two main scenarios:
 
 
 # Installation 
-Install the [latest release of  Roblox Integration Hub application](http://example.com), run it and extract and install Photoshop and Studio plugins. 
+Install the [latest release of  Roblox Integration Hub application]([http://example.com](https://github.com/roblox-integrations/roblox-photoshop/releases/latest)), run it and extract and install Photoshop and Studio plugins. 
 
 ### Photoshop Plugin Installation 
-Click 'Download the Photoshop plugin' in the [Roblox Integration Hub](http://example.com) app, and then double-click the saved plugin file. The plugin is found in the main menu's Plugins->Roblox Photoshop Plugin. 
+Click 'Download the Photoshop plugin' in the [Roblox Integration Hub]([http://example.com](https://github.com/roblox-integrations/roblox-photoshop/releases/latest)) app, and then double-click the saved plugin file. The plugin is found in the main menu's Plugins->Roblox Photoshop Plugin. 
 To upload assets, you'll need to provide an Open Cloud API Key. 
 1. In [Creator Dashboad](https://create.roblox.com/dashboard/credentials?activeTab=ApiKeysTab) click Create API Key, name it 'Photoshop Plugin', in 'Access Permission' select API System Assets, add both 'read' and 'write' permissions and use 0.0.0.0/0 as IP subnet, then generate and copy the API key. ![add api key](https://github.com/roblox-integrations/roblox-photoshop/assets/3534732/6bca3e51-ea31-40b3-8ca2-de75fc9f8bab).
 2. Get your user ID. Go to [roblox.com](htts://roblox.com), click on your profile, and copy the numeric value from the URL in the browser: ![user id](https://github.com/roblox-integrations/roblox-photoshop/assets/3534732/648b7a07-2637-474b-92c9-662efb0f399d)
@@ -31,8 +31,8 @@ Click 'Download the Studio plugin' in the Roblox Integration Hub app. Then, in t
 
 # What's Roblox Integration Hub?
 
-Roblox Integration Hub is a desktop app for Windows and Mac that allows Roblox Studio plugins to connect to other applications by exposing a local web server. It's free from the sandbox limitations of Studio(or third-party applications) plugins, which enables complex integration scenarios that require filesystem access, running native utilities, and so on. 
-It also tracks new integration releases and could be a great way to discover new apps that can work with Roblox.  
+[Roblox Integration Hub](https://github.com/roblox-integrations/roblox-photoshop/releases/latest) is a desktop app for Windows and Mac that allows Roblox Studio plugins to connect to other applications by exposing a local web server. It's free from the sandbox limitations of Studio(or third-party applications) plugins, which enables complex integration scenarios that require filesystem access, running native utilities, and so on. 
+It also tracks new integration releases and could be a great way to discover new apps that work with Roblox.  
 
 Today, Roblox Integration Hub supports Photoshop, and it can be extended with others in the future.
 
