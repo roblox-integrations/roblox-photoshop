@@ -14,6 +14,8 @@ There are two main scenarios:
 # Installation 
 Install the [latest release of  Roblox Integration Hub application]([http://example.com](https://github.com/roblox-integrations/roblox-photoshop/releases/latest)), run it and extract and install Photoshop and Studio plugins. 
 
+_Mac users:_ run ``` xattr -c ~/Downloads/RobloxIntegrationsHub.app ``` in your terminal to fix the "RobloxIntegrationsHub” is damaged and can’t be opened." error.   
+
 ### Photoshop Plugin Installation 
 Click 'Download the Photoshop plugin' in the [Roblox Integration Hub]([http://example.com](https://github.com/roblox-integrations/roblox-photoshop/releases/latest)) app, and then double-click the saved plugin file. The plugin is found in the main menu's Plugins->Roblox Photoshop Plugin. 
 To upload assets, you'll need to provide an Open Cloud API Key. 
