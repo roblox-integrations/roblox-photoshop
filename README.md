@@ -18,7 +18,8 @@ Install the [latest release of  Roblox Integration Hub application](http://examp
 Click 'Download the Photoshop plugin' in the [Roblox Integration Hub](http://example.com) app, and then double-click the saved plugin file. The plugin is found in the main menu's Plugins->Roblox Photoshop Plugin. 
 To upload assets, you'll need to provide an Open Cloud API Key. 
 1. In [Creator Dashboad](https://create.roblox.com/dashboard/credentials?activeTab=ApiKeysTab) click Create API Key, name it 'Photoshop Plugin', in 'Access Permission' select API System Assets, add both 'read' and 'write' permissions and use 0.0.0.0/0 as IP subnet, then generate and copy the API key. ![add api key](https://github.com/roblox-integrations/roblox-photoshop/assets/3534732/6bca3e51-ea31-40b3-8ca2-de75fc9f8bab).
-2. Get your user ID. Go to [roblox.com](htts://roblox.com), click on your profile, and copy the numeric value from the URL in the browser, the italic part is your user ID: www.roblox.com/users/_1122334455 _/profile. 
+2. Get your user ID. Go to [roblox.com](htts://roblox.com), click on your profile, and copy the numeric value from the URL in the browser: ![user id](https://github.com/roblox-integrations/roblox-photoshop/assets/3534732/648b7a07-2637-474b-92c9-662efb0f399d)
+
 
 
 
