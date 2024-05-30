@@ -25,7 +25,7 @@ To upload assets, you'll need to provide an Open Cloud API Key.
 
 
 ### Roblox Studio Plugin Installation 
-Click 'Download the Studio plugin' in the Roblox Integration Hub app. Then, in the Studio ribbon, click the 'Plugins' tab, click on the 'Plugins Folder' button, and double-copy the plugin file there(if you have an older version, please replace it). Then restart Studio, and you can find the Photoshop plugin in the Plugins tab in the Ribbon.
+Click 'Download the Studio plugin' in the Roblox Integration Hub app. Then, in the Studio ribbon, click the 'Plugins' tab, click on the 'Plugins Folder' button, and double-click the plugin file there(if you have an older version, please replace it). Then restart Studio, and you can find the Photoshop plugin in the Plugins tab in the Ribbon.
 
 <img width="610" alt="image" src="https://github.com/roblox-integrations/roblox-photoshop/assets/3534732/967ba33c-b856-4c6a-96f9-14090fd08f6e">
 
