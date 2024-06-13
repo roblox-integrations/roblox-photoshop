@@ -1,5 +1,5 @@
 # About 
-Roblox Photoshop is the first integration of [Roblox Integration Hub](https://github.com/roblox-integrations/roblox-photoshop?tab=readme-ov-file#whats-roblox-integration-hub), which connects Adobe Photoshop to Roblox Studio for seamless image editing. 
+The first integration of [Roblox Integration Hub](https://github.com/roblox-integrations/roblox-photoshop?tab=readme-ov-file#whats-roblox-integration-hub), which connects Adobe Photoshop to Roblox Studio for seamless image editing. Integration with Blender is coming next. 
 
 # How it works 
 There are two main scenarios: 
@@ -31,11 +31,11 @@ Click 'Download the Studio plugin' in the Roblox Integration Hub app. Then, in t
 
 # What's Roblox Integration Hub?
 
-[Roblox Integration Hub](https://github.com/roblox-integrations/roblox-photoshop/releases/latest) is a desktop app for Windows and Mac that allows Roblox Studio plugins to connect to other applications by exposing a local web server. It's free from the sandbox limitations of Studio(or third-party applications) plugins, which enables complex integration scenarios that require filesystem access, running native utilities, and so on.
+[Roblox Integration Hub](https://github.com/roblox-integrations/roblox-photoshop/releases/latest) is a desktop app for Windows and Mac that allows Roblox Studio plugins to connect to other applications by exposing a local web server. It's free from the sandbox limitations of Studio(or third-party applications) plugins, which enables complex integrations that might require filesystem access, running native utilities, and so on.
 
 It also tracks new integration releases and could be a great way to discover better creative workflows for Roblox.  
 
-Today, Roblox Integration Hub supports **Photoshop**, and it can be extended with others tools in the future.
+Today, Roblox Integration Hub supports **Photoshop**, and it can be extended with other tools like Blender, Figma, FMOD Studio and more! 
 
 # Contributions
 Yes! Details TBD. 
