@@ -37,5 +37,10 @@ It also tracks new integration releases and could be a great way to discover bet
 Today, Roblox Integration Hub supports **Photoshop**, and it can be extended with other tools like Blender, Figma, FMOD Studio and more! 
 
 # Contributions
-Yes! Details TBD. 
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+For feature requests and bug reports, please create an issue. 
+Also, please leave a star on GitHub, it helps a lot!
+
+# License
+MIT
 
