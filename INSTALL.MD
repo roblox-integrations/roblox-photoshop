@@ -1,6 +1,6 @@
 ### 1. Download
 
-Install the [latest release of  Roblox Integration Hub application]([http://example.com](https://github.com/roblox-integrations/roblox-photoshop/releases/latest)), run it and extract and install Photoshop and Studio plugins. 
+Download the [latest release of  Roblox Integration Hub application]([http://example.com](https://github.com/roblox-integrations/roblox-photoshop/releases/latest)) and run it. 
 
 _Mac users:_ run ``` xattr -c ~/Downloads/RobloxIntegrationsHub.app ``` in your terminal to fix the "RobloxIntegrationsHub” is damaged and can’t be opened." error.   
 
