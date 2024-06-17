@@ -10,7 +10,7 @@ There are two main scenarios:
 
 
 # Installation 
-Download and run the [latest release of Roblox Integration Hub](https://github.com/roblox-integrations/roblox-photoshop/releases/latest), and follow the [configuration instructions] (https://github.com/roblox-integrations/roblox-photoshop/blob/main/INSTALL.MD). 
+Download and run the [latest release of Roblox Integration Hub](https://github.com/roblox-integrations/roblox-photoshop/releases/latest), and follow the [configuration instructions](https://github.com/roblox-integrations/roblox-photoshop/blob/main/INSTALL.MD). 
 
 
 # What's Roblox Integration Hub?
@@ -19,7 +19,7 @@ Download and run the [latest release of Roblox Integration Hub](https://github.c
 
 It also tracks new integration releases and could be a great way to discover better creative workflows for Roblox.  
 
-Today, Roblox Integration Hub supports **Photoshop**, and it can be extended with other tools like Blender, Figma, FMOD Studio and more! 
+Today, Roblox Integration Hub supports image editing with **Photoshop**, support for Blender is coming next, and it can be expended with apps like Figma, FMOD Studio and more! 
 
 # Contributions
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
