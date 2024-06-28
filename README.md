@@ -3,9 +3,10 @@ The first integration of [Roblox Integration Hub](https://github.com/roblox-inte
 
 # How it works 
 There are two main scenarios: 
-#### 1. Save any Photoshop document as Roblox image asset and copy it's AssetID![new file upload](https://github.com/roblox-integrations/roblox-photoshop/assets/3534732/98dfb785-8605-4bc0-88d7-951657669bef)
 
-#### 2. Open any image in your Roblox place for editing and hot-swap the AssetID directly in Studio![edit-workflow-short](https://github.com/roblox-integrations/roblox-photoshop/assets/3534732/3587c100-65ed-47a0-baa7-246092f9bd06)
+#### 1. Open any image in your Roblox place for editing and hot-swap the AssetID directly in Studio![edit-workflow-short](https://github.com/roblox-integrations/roblox-photoshop/assets/3534732/3587c100-65ed-47a0-baa7-246092f9bd06)
+
+#### 2. Save any Photoshop document as Roblox image asset and copy it's AssetID![new file upload](https://github.com/roblox-integrations/roblox-photoshop/assets/3534732/98dfb785-8605-4bc0-88d7-951657669bef)
 
 
 
