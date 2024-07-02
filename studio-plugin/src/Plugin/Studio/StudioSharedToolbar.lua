@@ -1,3 +1,5 @@
+--!strict
+
 local PhotoshopIntegration = script:FindFirstAncestor("PhotoshopIntegration")
 local Packages = PhotoshopIntegration.Packages
 
@@ -9,46 +11,49 @@ local StudioPluginContext = require(script.Parent.StudioPluginContext)
 
 local e = React.createElement
 
-local StudioSharedToolbar = React.Component:extend("StudioSharedToolbar")
+type ToolbarSettings = CreateSharedToolbar.SharedToolbarSettings
 
-StudioSharedToolbar.defaultProps = {
-	buttonEnabled = true,
-	buttonActive = false,
-}
+local function StudioSharedToolbar(props: {
+	plugin: Plugin,
+	combinerName: string,
+	toolbarName: string,
+	buttonName: string,
+	buttonIcon: string,
+	buttonTooltip: string,
+	onClick: () -> (),
+	buttonEnabled: boolean,
+	buttonActive: boolean,
+	[any]: { __RESTRICTED__: boolean },
+})
+	local toolbarSettings: ToolbarSettings, setToolbarSettings = React.useState({} :: ToolbarSettings)
 
-function StudioSharedToolbar:init()
-	local toolbarSettings = {} :: CreateSharedToolbar.SharedToolbarSettings
-	self.toolbarSettings = toolbarSettings
-	toolbarSettings.CombinerName = self.props.combinerName
-	toolbarSettings.ToolbarName = self.props.toolbarName
-	toolbarSettings.ButtonName = self.props.buttonName
-	toolbarSettings.ButtonIcon = self.props.buttonIcon
-	toolbarSettings.ButtonTooltip = self.props.buttonTooltip
-	toolbarSettings.ClickedFn = self.props.onClick
-	CreateSharedToolbar(self.props.plugin, toolbarSettings)
-	toolbarSettings.Button.ClickableWhenViewportHidden = true
-end
+	React.useEffect(function()
+		local toolbarSettings = {} :: ToolbarSettings
+		toolbarSettings.CombinerName = props.combinerName
+		toolbarSettings.ToolbarName = props.toolbarName
+		toolbarSettings.ButtonName = props.buttonName
+		toolbarSettings.ButtonIcon = props.buttonIcon
+		toolbarSettings.ButtonTooltip = props.buttonTooltip
+		toolbarSettings.ClickedFn = props.onClick
+		CreateSharedToolbar(props.plugin, toolbarSettings)
+		assert(toolbarSettings.Button, "Button not created")
+		toolbarSettings.Button.ClickableWhenViewportHidden = true
+		setToolbarSettings(toolbarSettings)
+	end, {})
 
-function StudioSharedToolbar:render()
+	React.useEffect(
+		function()
+			if toolbarSettings.Button then
+				toolbarSettings.Button.Name = props.buttonName
+				toolbarSettings.Button.Icon = props.buttonIcon
+				toolbarSettings.Button.Enabled = props.buttonEnabled
+				toolbarSettings.Button:SetActive(props.buttonActive)
+			end
+		end,
+		{ toolbarSettings.Button, props.buttonName, props.buttonIcon, props.buttonEnabled, props.buttonActive } :: { any }
+	)
+
 	return nil
-end
-
-function StudioSharedToolbar:didUpdate(lastProps)
-	if self.props.buttonName ~= lastProps.buttonName then
-		self.toolbarSettings.Button.Name = self.props.buttonName
-	end
-
-	if self.props.buttonIcon ~= lastProps.buttonIcon then
-		self.toolbarSettings.Button.Icon = self.props.buttonIcon
-	end
-
-	if self.props.buttonEnabled ~= lastProps.buttonEnabled then
-		self.toolbarSettings.Button.Enabled = self.props.buttonEnabled
-	end
-
-	if self.props.buttonActive ~= lastProps.buttonActive then
-		self.toolbarSettings.Button:SetActive(self.props.buttonActive)
-	end
 end
 
 local function StudioSharedToolbarWrapper(props)

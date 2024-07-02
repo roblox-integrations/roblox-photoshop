@@ -1,3 +1,5 @@
+--!strict
+
 local PhotoshopIntegration = script:FindFirstAncestor("PhotoshopIntegration")
 local Packages = PhotoshopIntegration.Packages
 

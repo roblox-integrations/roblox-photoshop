@@ -12,5 +12,8 @@
             "name": "Studio Plugin",
             "path": "./studio-plugin"
         }
-    ]
+    ],
+    "settings": {
+        "stylua.disableVersionCheck": true
+    }
 }

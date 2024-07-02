@@ -1,3 +1,5 @@
+--!strict
+
 local VersionWarning = {}
 
 local HttpService = game:GetService("HttpService")

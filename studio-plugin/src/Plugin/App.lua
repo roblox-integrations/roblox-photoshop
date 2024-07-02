@@ -1,11 +1,9 @@
+--!strict
+
 local PhotoshopIntegration = script:FindFirstAncestor("PhotoshopIntegration")
 local Packages = PhotoshopIntegration.Packages
 
 local React = require(Packages.React)
-
-local e = React.createElement
-
-local App = React.Component:extend("App")
 
 local StudioSharedToolbar = require(script.Parent.Studio.StudioSharedToolbar)
 local StudioPluginContext = require(script.Parent.Studio.StudioPluginContext)
@@ -13,23 +11,27 @@ local StudioPluginGui = require(script.Parent.Studio.StudioPluginGui)
 local Widget = require(script.Parent.Widget)
 local VersionWarning = require(script.Parent.VersionWarning)
 
-function App:init()
-	self:setState({
-		guiEnabled = false,
-	})
-	VersionWarning:runVersionChecking()
-end
+local e = React.createElement
 
-function App:render()
+local function App(props: {
+	plugin: Plugin,
+	[any]: { __RESTRICTED__: boolean },
+})
 	local pluginName = "Photoshop Integration"
 
+	local guiEnabled, setGuiEnabled = React.useState(false)
+
+	React.useEffect(function()
+		VersionWarning:runVersionChecking()
+	end, {})
+
 	return e(StudioPluginContext.Provider, {
-		value = self.props.plugin,
+		value = props.plugin,
 	}, {
 		gui = e(StudioPluginGui, {
 			id = pluginName,
 			title = pluginName,
-			active = self.state.guiEnabled,
+			active = guiEnabled,
 
 			initDockState = Enum.InitialDockState.Left,
 			overridePreviousState = false,
@@ -38,19 +40,11 @@ function App:render()
 
 			zIndexBehavior = Enum.ZIndexBehavior.Sibling,
 
-			onInitialState = function(initialState)
-				self:setState({
-					guiEnabled = initialState,
-				})
-			end,
-
-			onClose = function()
-				self:setState({
-					guiEnabled = false,
-				})
-			end,
+			setEnabled = React.useCallback(function(enabled)
+				setGuiEnabled(enabled)
+			end, {}),
 		}, {
-			widget = e(Widget),
+			Widget = e(Widget),
 		}),
 		sharedToolbarButton = e(StudioSharedToolbar, {
 			combinerName = "Roblox-Integration-Toolbar",
@@ -59,14 +53,12 @@ function App:render()
 			buttonIcon = "rbxassetid://16371612297",
 			buttonTooltip = "Toggle the Photoshop Integration widget",
 			buttonEnabled = true,
-			buttonActive = self.state.guiEnabled,
-			onClick = function()
-				self:setState(function(state)
-					return {
-						guiEnabled = not state.guiEnabled,
-					}
+			buttonActive = guiEnabled,
+			onClick = React.useCallback(function()
+				setGuiEnabled(function(currentEnabled)
+					return not currentEnabled
 				end)
-			end,
+			end, {}),
 		}),
 	})
 end

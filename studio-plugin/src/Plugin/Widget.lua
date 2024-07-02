@@ -1,8 +1,9 @@
+--!strict
+
 local PhotoshopIntegration = script:FindFirstAncestor("PhotoshopIntegration")
 local Packages = PhotoshopIntegration.Packages
 
 local MarketplaceService = game:GetService("MarketplaceService")
-local AssetService = game:GetService("AssetService")
 local Selection = game:GetService("Selection")
 
 local React = require(Packages.React)
@@ -10,23 +11,23 @@ local Cryo = require(Packages.Cryo)
 
 local e = React.createElement
 
-local Widget = React.Component:extend("Widget")
 local SyncableTexture = require(script.Parent.SyncableTexture)
-
 local TextureProperties = require(script.Parent.TextureProperties)
-type ImageType = "None" | "AssetId" | "BMP"
 
-local DEBUG_USE_EDITABLE_IMAGES = true
-local ok, areEditableImagesEnabled = pcall(function()
-	Instance.new("EditableImage"):WritePixels(Vector2.zero, Vector2.one, { 0, 0, 0, 0 })
-end)
-if not (ok and areEditableImagesEnabled) then
-	DEBUG_USE_EDITABLE_IMAGES = false
-end
+local Types = require(script.Parent.Types)
+type ImageType = Types.ImageType
+type ProductInfo = Types.ProductInfo
+type Session = Types.Session
 
-local function getTexturesFromInstancesNoBatching(instances: { Instance })
+type InstanceTextureData = {
+	Instance: Instance,
+	PropertyName: string,
+	TextureId: string,
+}
+
+local function getTexturesFromInstancesNoBatching(instances: { Instance }): { InstanceTextureData }
 	local instancesCopy = table.clone(instances)
-	local textureList = {}
+	local textureList: { InstanceTextureData } = {}
 	for _, instance in instancesCopy do
 		if instance:IsA("BasePart") and not instance:IsA("TriangleMeshPart") and not instance:IsA("Terrain") then
 			-- For convenience, if the selected part has a SpecialMesh then we'll include that too
@@ -57,9 +58,9 @@ local function getTexturesFromInstancesNoBatching(instances: { Instance })
 				end
 				if textureId ~= "" then
 					table.insert(textureList, {
-						instance = instance,
-						propertyName = propertyName,
-						textureId = textureId,
+						Instance = instance,
+						PropertyName = propertyName,
+						TextureId = textureId,
 					})
 				end
 			end
@@ -68,47 +69,51 @@ local function getTexturesFromInstancesNoBatching(instances: { Instance })
 	return textureList
 end
 
-function Widget:DEPRECATED_refreshSelection()
-	local source: Instance? = React.None
-	local shownImage = ""
-	local productInfo = { Creator = {} } :: { Name: string, Creator: { Name: string } }
+-- function Widget:getProductInfo(assetId: string)
+-- 	local state = self.state
+-- 	if state[assetId] then
+-- 		return state[assetId]
+-- 	end
+-- 	local productInfo: ProductInfo = {
+-- 		Name = "",
+-- 		Description = "",
+-- 		Creator = {
+-- 			CreatorType = "",
+-- 			Name = "",
+-- 			Id = -1,
+-- 		},
+-- 	}
+-- 	self:setState({
+-- 		[assetId] = table.clone(productInfo),
+-- 	})
+-- 	task.defer(function()
+-- 		-- GetProductInfo is slow, so we'll do it on a separate thread and fill in data if we get results
+-- 		local numericAssetId = string.match(assetId, "(%d+)")
+-- 		if numericAssetId then
+-- 			local ok, assetProductInfo = pcall(function()
+-- 				return MarketplaceService:GetProductInfo(numericAssetId, Enum.InfoType.Asset)
+-- 			end)
+-- 			if ok then
+-- 				local didMakeChanges = false
+-- 				for key, value in assetProductInfo do
+-- 					if productInfo[key] then
+-- 						productInfo[key] = value
+-- 						didMakeChanges = true
+-- 					end
+-- 				end
+-- 				if didMakeChanges then
+-- 					self:setState({
+-- 						[assetId] = table.clone(productInfo),
+-- 					})
+-- 				end
+-- 			end
+-- 		end
+-- 	end)
+-- 	return productInfo
+-- end
 
-	local shownAssetId = string.match(shownImage, "(%d+)")
-	local imageType = "None"
-	if shownAssetId then
-		imageType = "AssetId"
-		local ok, assetProductInfo = pcall(function()
-			return MarketplaceService:GetProductInfo(shownAssetId, Enum.InfoType.Asset)
-		end)
-		if ok and assetProductInfo then
-			productInfo = assetProductInfo
-		end
-	elseif shownImage ~= "" and DEBUG_USE_EDITABLE_IMAGES then
-		imageType = "BMP"
-		local ok, editableImagePreview = pcall(function()
-			return AssetService:CreateEditableImageAsync(shownImage)
-		end)
-		if ok and editableImagePreview then
-			shownImage = editableImagePreview
-		else
-			shownImage = nil
-		end
-	end
-
-	self:setState({
-		source = source,
-		imageType = imageType,
-		shownImage = shownImage,
-		productInfo = productInfo,
-	})
-end
-
-function Widget:getProductInfo(assetId: string)
-	local state = self.state
-	if state[assetId] then
-		return state[assetId]
-	end
-	local productInfo = {
+local function getProductInfo(assetId: string): ProductInfo
+	return {
 		Name = "",
 		Description = "",
 		Creator = {
@@ -117,59 +122,32 @@ function Widget:getProductInfo(assetId: string)
 			Id = -1,
 		},
 	}
-	self:setState({
-		[assetId] = table.clone(productInfo),
-	})
-	task.defer(function()
-		-- GetProductInfo is slow, so we'll do it on a separate thread and fill in data if we get results
-		local numericAssetId = string.match(assetId, "(%d+)")
-		if numericAssetId then
-			local ok, assetProductInfo = pcall(function()
-				return MarketplaceService:GetProductInfo(numericAssetId, Enum.InfoType.Asset)
-			end)
-			if ok then
-				local didMakeChanges = false
-				for key, value in assetProductInfo do
-					if productInfo[key] then
-						productInfo[key] = value
-						didMakeChanges = true
-					end
-				end
-				if didMakeChanges then
-					self:setState({
-						[assetId] = table.clone(productInfo),
-					})
-				end
-			end
-		end
-	end)
-	return productInfo
 end
 
-function Widget:getAvailableSessions()
+-- Returns all available sessions that are not already locked
+local function getAvailableSessions(selection: { Instance }, lockedSessions: { [string]: Session }): { Session }
 	local sessions = {}
 
 	local lockedSourcePaths = {}
-	for _, session in self.state.lockedSessions do
-		lockedSourcePaths[session.sourcePath] = true
+	for _, session in lockedSessions do
+		lockedSourcePaths[session.sessionId] = true
 	end
 
-	local selection = self.state.selection
 	if #selection > 0 then
 		local textures = getTexturesFromInstancesNoBatching(selection)
 		for _, textureData in textures do
-			local sourcePath = textureData.instance:GetDebugId() .. "." .. textureData.propertyName
-			if lockedSourcePaths[sourcePath] then
+			local sessionId = textureData.Instance:GetDebugId() .. "." .. textureData.PropertyName
+			if lockedSourcePaths[sessionId] then
 				continue
 			end
-			lockedSourcePaths[sourcePath] = true
-			local textureState = {
-				source = textureData.instance,
-				propertyName = textureData.propertyName,
-				sourcePath = sourcePath,
-				shownImage = textureData.textureId,
+			lockedSourcePaths[sessionId] = true
+			local textureState: Session = {
+				sessionId = sessionId,
+				source = textureData.Instance,
+				propertyName = textureData.PropertyName,
+				shownImage = textureData.TextureId,
 				imageType = "AssetId",
-				productInfo = self:getProductInfo(textureData.textureId),
+				productInfo = getProductInfo(textureData.TextureId),
 			}
 			table.insert(sessions, textureState)
 		end
@@ -178,78 +156,86 @@ function Widget:getAvailableSessions()
 	return sessions
 end
 
-function Widget:willUnmount()
-	self.onSelectionChanged:Disconnect()
+local function lockSession(
+	session: Session,
+	lockedSessions: { [string]: Session },
+	setLockedSessions: ({ [string]: Session }) -> nil
+)
+	print("lock", session.sessionId)
+	setLockedSessions(Cryo.Dictionary.join(lockedSessions, {
+		[session.sessionId] = session,
+	}))
 end
 
-function Widget:init()
-	self.onSelectionChanged = Selection.SelectionChanged:Connect(function()
-		self:setState({
-			selection = Selection:Get(),
-		})
-	end)
-	self:setState({
-		selection = Selection:Get(),
-		lockedSessions = {},
-	})
+local function unlockSession(
+	session: Session,
+	lockedSessions: { [string]: Session },
+	setLockedSessions: ({ [string]: Session }) -> nil
+)
+	print("unlock", session.sessionId)
+	setLockedSessions(Cryo.Dictionary.join(lockedSessions, {
+		[session.sessionId] = Cryo.None,
+	}))
 end
 
-function Widget:onLockTexture(syncableTexture)
-	local lockedSessions = self.state.lockedSessions
-	local sessionId = syncableTexture.state.sessionData.sessionId
-	if sessionId then
-		lockedSessions[sessionId] = syncableTexture.state
-	end
-	self:setState({})
-end
+local function Widget(props: {
+	[any]: { __RESTRICTED__: boolean },
+})
+	local selection: { Instance }, setSelection = React.useState({} :: { Instance })
+	local lockedSessions: { [string]: Session }, setLockedSessions = React.useState({} :: { [string]: Session })
 
-function Widget:onUnlockTexture(syncableTexture, ...)
-	local lockedSessions = self.state.lockedSessions
-	local sessionId = syncableTexture.state.sessionData.sessionId
-	if sessionId then
-		lockedSessions[sessionId] = nil
-	end
-	self:setState({})
-end
+	React.useEffect(function()
+		local onSelectionChanged = Selection.SelectionChanged:Connect(function()
+			setSelection(Selection:Get())
+		end)
+		setSelection(Selection:Get())
+		return function()
+			onSelectionChanged:Disconnect()
+		end
+	end, {})
 
-function Widget:render()
-	local sessionTextures = {}
-	local hasSessionTextures = false
-	local availableSessions = self:getAvailableSessions()
-	for i, stateData in availableSessions do
+	local index = 1
+	local function createTexture(session: Session, locked: boolean)
 		local newTexture = e(
 			SyncableTexture,
-			Cryo.Dictionary.join(stateData, {
-				index = i,
-				sessionData = {},
-				hasPolling = false,
-				onSessionDataChanged = function(syncableTexture)
-					self:onLockTexture(syncableTexture)
+			Cryo.Dictionary.join(session, {
+				locked = locked,
+				index = index,
+				setLocked = function(toLock: boolean)
+					if toLock then
+						lockSession(session, lockedSessions, setLockedSessions)
+					else
+						unlockSession(session, lockedSessions, setLockedSessions)
+					end
+				end,
+				setShownImage = function(newImage: string)
+					if session.source then
+						session.source[session.propertyName] = "rbxassetid://" .. newImage
+					end
+					-- If the session is locked, update the shown image
+					-- If the session isn't locked, it will be automatically updated when Widget is refreshed
+					if lockedSessions[session.sessionId] then
+						lockedSessions[session.sessionId].shownImage = newImage
+					end
+					setLockedSessions(table.clone(lockedSessions))
 				end,
 			})
 		)
-		sessionTextures[stateData.sourcePath] = newTexture
-		hasSessionTextures = true
+		index += 1
+		return newTexture
 	end
 
+	local availableTextures = {}
 	local lockedTextures = {}
-	local hasLockedTextures = false
-	local i = 1
-	for _, stateData in self.state.lockedSessions do
-		local newTexture = e(
-			SyncableTexture,
-			Cryo.Dictionary.join(stateData, {
-				index = #availableSessions + i,
-				hasPolling = true,
-				onSessionDataChanged = function(syncableTexture)
-					self:onUnlockTexture(syncableTexture)
-				end,
-			})
-		)
-		lockedTextures[stateData.sourcePath] = newTexture
-		hasLockedTextures = true
-		i += 1
+	for _, session in getAvailableSessions(selection, lockedSessions) do
+		availableTextures[session.sessionId] = createTexture(session, false)
 	end
+	for _, session in lockedSessions do
+		lockedTextures[session.sessionId] = createTexture(session, true)
+	end
+
+	local hasAvailableTextures = not Cryo.isEmpty(availableTextures)
+	local hasLockedTextures = not Cryo.isEmpty(lockedTextures)
 
 	local theme = settings().Studio.Theme
 
@@ -265,51 +251,45 @@ function Widget:render()
 			HorizontalAlignment = Enum.HorizontalAlignment.Left,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 		}),
-		selected = if hasSessionTextures
-			then e(
-				"Frame",
-				{
-					Size = UDim2.new(0, 0, 0, 0),
-					BackgroundTransparency = 1,
-					AutomaticSize = Enum.AutomaticSize.XY,
-					LayoutOrder = 1,
-				},
-				Cryo.Dictionary.join({
-					uiListLayout = e("UIListLayout", {
-						Padding = UDim.new(0, 0),
-						HorizontalAlignment = Enum.HorizontalAlignment.Left,
-						SortOrder = Enum.SortOrder.LayoutOrder,
-					}),
-				}, sessionTextures)
-			)
-			else nil,
-		spacer = if hasSessionTextures and hasLockedTextures
-			then e("Frame", {
-				Size = UDim2.new(1, 0, 0, 4),
-				BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.CheckedFieldBorder),
+		availableTextureList = hasAvailableTextures and e(
+			"Frame",
+			{
+				Size = UDim2.new(0, 0, 0, 0),
+				BackgroundTransparency = 1,
+				AutomaticSize = Enum.AutomaticSize.XY,
+				LayoutOrder = 1,
+			},
+			Cryo.Dictionary.join({
+				uiListLayout = e("UIListLayout", {
+					Padding = UDim.new(0, 0),
+					HorizontalAlignment = Enum.HorizontalAlignment.Left,
+					SortOrder = Enum.SortOrder.LayoutOrder,
+				}),
+			}, availableTextures)
+		),
+		spacer = hasAvailableTextures and hasLockedTextures and e("Frame", {
+			Size = UDim2.new(1, 0, 0, 4),
+			BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.CheckedFieldBorder),
+			BorderSizePixel = 0,
+			LayoutOrder = 2,
+		}),
+		lockedTextureList = hasLockedTextures and e(
+			"Frame",
+			{
+				Size = UDim2.new(1, 0, 0, 0),
+				BackgroundTransparency = 0.5,
 				BorderSizePixel = 0,
-				LayoutOrder = 2,
-			})
-			else nil,
-		activeEdits = if hasLockedTextures
-			then e(
-				"Frame",
-				{
-					Size = UDim2.new(1, 0, 0, 0),
-					BackgroundTransparency = 0.5,
-					BorderSizePixel = 0,
-					AutomaticSize = Enum.AutomaticSize.Y,
-					LayoutOrder = 3,
-				},
-				Cryo.Dictionary.join({
-					uiListLayout = e("UIListLayout", {
-						Padding = UDim.new(0, 4),
-						HorizontalAlignment = Enum.HorizontalAlignment.Left,
-						SortOrder = Enum.SortOrder.LayoutOrder,
-					}),
-				}, lockedTextures)
-			)
-			else nil,
+				AutomaticSize = Enum.AutomaticSize.Y,
+				LayoutOrder = 3,
+			},
+			Cryo.Dictionary.join({
+				uiListLayout = e("UIListLayout", {
+					Padding = UDim.new(0, 4),
+					HorizontalAlignment = Enum.HorizontalAlignment.Left,
+					SortOrder = Enum.SortOrder.LayoutOrder,
+				}),
+			}, lockedTextures)
+		),
 	})
 end
 
