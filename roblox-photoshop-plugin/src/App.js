@@ -224,16 +224,11 @@ const App = () => {
             } catch (e) {
                 console.error("error updating the session", e)
             }
-        } else { // upload new asset 
+        } else { // upload new asset
             console.log('Saving new asset w/o a session..')
             assetId = await saveAsRobloxAsset({})
             console.log('Saved new asset w/o a session, ', assetId)
         }
-
-
-        
-
-
 
     }
 
@@ -242,7 +237,7 @@ const App = () => {
     const getImageFromDecal = async (decalId) => {
 
         let url = getBaseURL() + 'imageIdFromAssetId/'+ decalId
-            
+
         let  response = await fetch(url)
         if(!response.ok) {
             throw new Error('Cant fetch imageId')
@@ -513,8 +508,8 @@ return (
 
             <sp-body size="S">{message}</sp-body>
 
-            {resultAssetId 
-                ? 
+            {resultAssetId
+                ?
                 <sp-button id="copyResultAssetIdBtn" variant="secondary" quiet onClick={()=>{ navigator.clipboard.setContent({"text/plain": ""+ resultAssetId})}}>Copy asset id</sp-button>
                 : <></>
 
