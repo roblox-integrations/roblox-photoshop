@@ -32,6 +32,7 @@ The Desktop app monitors a working folder on the filesystem for images and meshe
   
 
 ## Editor-first
+* I want to use the entities I operate with in the editor for iteration on Roblox. For example a PBR material, Mesh + Texuture Pack, A button with multiple states, a decal. 
 * I want to export images from my editor and live update them in Roblox
 
 # Desktop application
