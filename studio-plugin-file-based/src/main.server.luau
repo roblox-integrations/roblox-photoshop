@@ -19,8 +19,16 @@ export type Piece = {
     type: string, --  "image|mesh|meshtexturepack|pbrpack"
     filePath: string,
     fileHash: string,
-    assetIds: {},
+    uploads: {
+        {
+            assetId: string,
+            decalId: string,
+            fileHash: string,
+            operationId: string
+        }
+    },
     updatedAt: number,
+    uploadedAt: number, 
     deletedAt: number
 }
 
@@ -28,7 +36,7 @@ print("sync plugin reloaded..." .. os.time())
 local tb = plugin:CreateToolbar("Sync")
 local btn = tb:CreateButton(".", "A Button", "rbxassetid://9087232887")
 
-local plugin_enabled = true
+local plugin_enabled = false
 
 
 type PiecesSyncState = {
@@ -51,7 +59,7 @@ type SyncState = {
 
 local pieces_map = {}
 local pieces_sync_state : PiecesSyncState = {
-    updatedAt = -1,
+    updatedAt = -1, -- MI: Product opinion: update all wired instances on startup to the most recent pieces values
 }
 
 
@@ -78,16 +86,22 @@ function start_polling()
 
     local function process_pieces(pieces: { [string]: Piece })
         pieces_map = pieces
-        -- 2. cetch all wired instances
+        -- 1. fetch all wired instances
         local instanceWires = ts_get_all_wired_in_dm()
  
-        -- 3. check if all wired pieces still exist
+        -- 2. update wired instance when needed and cleanup wires for missing pieces
+        local maxTimestamp = -1
         for instance, wires in instanceWires do
-            update_wired_instances(instance, wires)
+            local ts = update_wired_instances(instance, wires)
+            print('ts ' .. ts .. ', maxTs ' .. maxTimestamp)
+            if ts > maxTimestamp then maxTimestamp = ts end
         end
-        for _, p in pieces_map do
-            -- print('piece: ' .. p.filePath .. ', time diff: ' .. (pieces_sync_state.updatedAt - p.updatedAt))
-        end
+
+        -- -- 3. update the timestamp
+        -- pieces_sync_state.updatedAt = os.time()
+        -- for _, p in pieces_map do
+        --     -- print('piece: ' .. p.filePath .. ', time diff: ' .. (pieces_sync_state.updatedAt - p.updatedAt))
+        -- end
            
 
 
@@ -100,9 +114,7 @@ function start_polling()
             if #updates > 0 then
                 print(`there were {#updates} updates`)
             end
-
             process_pieces(updates)
-
             wait(5)
         end
         print("polling ended")
@@ -126,27 +138,48 @@ end)
 
 
 
+function get_current_asset_id(piece: Piece): string
+    for _, upload in piece.uploads do
+        if piece.fileHash ~= upload.fileHash then continue end
+        return upload.assetId
+    end
+    return nil
+end
 
+function get_piece_update_time(piece: Piece): number 
+    print('get_piece_update_time: ' .. piece.id)
+    local uploadedAt = nil 
+    if (piece.uploadedAt ~= nil) then uploadedAt = piece.uploadedAt else uploadedAt = piece.updatedAt end
+    print('updatedAt: ' .. piece.updatedAt .. ', uploadedAt: ' .. uploadedAt)
+    if(piece.updatedAt > uploadedAt) 
+        then return piece.updatedAt
+        else return uploadedAt
+    end
 
-function update_wired_instances(instance: Instance, wires: {})
+end
+
+function update_wired_instances(instance: Instance, wires: {}): number
     print('instance name: ' .. instance.Name)
-
-    for piece_id,_ in wires do
+    local maxTimestamp = -1;
+    for piece_id, propertyName in wires do 
+        -- 1. check if the piece still exists and was recently updated
         local piece = pieces_map[piece_id]
-
         if piece == nil then
-            print('remove a wire with piece_id: ' .. piece_id)
+            print('remove a wire with non-existent piece_id: ' .. piece_id)
             wires[piece_id] = nil -- remove wire for missing piece
             continue
-        elseif pieces_sync_state.updatedAt >= piece.updatedAt then -- recently updated, skip
-            continue
         end
-
-        -- image        
+        -- 2. Update wired instance according to the piece type
+        -- 2.1 image        
         if piece.type == 'image' then
             if piece.role == 'asset' then
                 print('!!! Uncomment once assets persistance is there')
-                -- instance[propertyName] = 'rbxassetid://' .. piece.assetIds[0]
+                local assetId = get_current_asset_id(piece)
+                if(assetId == nil) then continue end
+                local assetUrl = 'rbxassetid://' .. assetId
+                if(instance[propertyName] ~= assetUrl) then -- only update the property if changed
+                    instance[propertyName] = assetUrl
+                end
             else 
                 print('! Unsupported role ' .. piece.role .. ' for piece type: ' .. piece.type)
             end
@@ -157,15 +190,17 @@ function update_wired_instances(instance: Instance, wires: {})
         end
     end
 
-    -- update tags
+    -- 4. persist current wiring config to tags
     ts_set_instance_wires(instance, wires)
+
+    return maxTimestamp
 end
 
 -- wiring persistance via tags
 local CollectionService = game:GetService("CollectionService")
 local TAG_WIRED = 'wired'
 local TAG_PREFIX = 'piece:'
-
+  
 
 
 function ts_set_instance_wires(instance: Instance, wires: {})
@@ -178,8 +213,8 @@ function ts_set_instance_wires(instance: Instance, wires: {})
         end
         instance:RemoveTag(tag)
     end
-    -- re-setup tags
 
+    -- re-setup tags
     local counter = 0;
     for _, _ in wires do
         counter = counter + 1
@@ -216,4 +251,5 @@ function ts_get_all_wired_in_dm(): {[Instance]: {string: string} }
     print('found ' .. counter .. ' wired instances')
     return instance_wires
 
+    
 end
