@@ -108,6 +108,11 @@ SET propname = 67890 where tag = piece:propname:uuid ???? до
 https://github.com/roblox-integrations/roblox-photoshop/blob/main/studio-plugin/src/Plugin/TextureProperties.lua
 
 
+### Update Logic
+* Listen to new wires tags to to appear
+* Take into account per-instance update timestamps; consider dropping the global update timestamp for now
+
+
 Open items: 
 EditableMeshes/Images
 Packages versions?
