@@ -2,5 +2,6 @@
 /roblox-photoshop-plugin/node_modules/
 /roblox-photoshop-plugin/.env
 .idea/
+.vscode
 server/plugins/photoshop-plugin.ccx
 server/plugins/studio-photoshop-plugin.rbxm

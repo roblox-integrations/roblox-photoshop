@@ -17,6 +17,7 @@ local app = React.createElement(App, {
 local tree = ReactRoblox.createRoot(Instance.new("Folder"))
 tree:render(ReactRoblox.createPortal(app, game:GetService("CoreGui")))
 
+print('plugin reloaded')
 plugin.Unloading:Connect(function()
 	tree:unmount()
 end)

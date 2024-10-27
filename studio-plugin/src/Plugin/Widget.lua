@@ -1,8 +1,8 @@
 local PhotoshopIntegration = script:FindFirstAncestor("PhotoshopIntegration")
 local Packages = PhotoshopIntegration.Packages
 
-local MarketplaceService = game:GetService("MarketplaceService")
-local AssetService = game:GetService("AssetService")
+
+local HttpService = game:GetService("HttpService")
 local Selection = game:GetService("Selection")
 
 local React = require(Packages.React)
@@ -11,8 +11,9 @@ local Cryo = require(Packages.Cryo)
 local e = React.createElement
 
 local Widget = React.Component:extend("Widget")
-local SyncableTexture = require(script.Parent.SyncableTexture)
-
+-- local SyncableTexture = require(script.Parent.SyncableTexture)
+local InstanceWirerComponent = require(script.Parent.InstanceWirerComponent)
+local PieceComponent = require(script.Parent.PieceComponent)
 local TextureProperties = require(script.Parent.TextureProperties)
 type ImageType = "None" | "AssetId" | "BMP"
 
@@ -24,195 +25,191 @@ if not (ok and areEditableImagesEnabled) then
 	DEBUG_USE_EDITABLE_IMAGES = false
 end
 
-local function getTexturesFromInstancesNoBatching(instances: { Instance })
-	local instancesCopy = table.clone(instances)
-	local textureList = {}
-	for _, instance in instancesCopy do
-		if instance:IsA("BasePart") and not instance:IsA("TriangleMeshPart") and not instance:IsA("Terrain") then
-			-- For convenience, if the selected part has a SpecialMesh then we'll include that too
-			local fileMesh = instance:FindFirstChildWhichIsA("FileMesh")
-			if fileMesh and not table.find(instancesCopy, fileMesh) then
-				table.insert(instancesCopy, fileMesh)
-				continue
-			end
-		end
-		if instance:IsA("MeshPart") then
-			local surfaceAppearance = instance:FindFirstChildWhichIsA("SurfaceAppearance")
-			if surfaceAppearance and not table.find(instancesCopy, surfaceAppearance) then
-				table.insert(instancesCopy, surfaceAppearance)
-				continue
-			end
-		end
-		for _, texturePropertyData in TextureProperties do
-			if not instance:IsA(texturePropertyData.ClassName) then
-				continue
-			end
-			for _, propertyName in texturePropertyData.Properties do
-				local ok, textureId = pcall(function()
-					return instance[propertyName]
-				end)
-				if not ok then
-					warn(textureId)
-					continue
-				end
-				if textureId ~= "" then
-					table.insert(textureList, {
-						instance = instance,
-						propertyName = propertyName,
-						textureId = textureId,
-					})
-				end
-			end
-		end
-	end
-	return textureList
-end
 
-function Widget:DEPRECATED_refreshSelection()
-	local source: Instance? = React.None
-	local shownImage = ""
-	local productInfo = { Creator = {} } :: { Name: string, Creator: { Name: string } }
-
-	local shownAssetId = string.match(shownImage, "(%d+)")
-	local imageType = "None"
-	if shownAssetId then
-		imageType = "AssetId"
-		local ok, assetProductInfo = pcall(function()
-			return MarketplaceService:GetProductInfo(shownAssetId, Enum.InfoType.Asset)
-		end)
-		if ok and assetProductInfo then
-			productInfo = assetProductInfo
-		end
-	elseif shownImage ~= "" and DEBUG_USE_EDITABLE_IMAGES then
-		imageType = "BMP"
-		local ok, editableImagePreview = pcall(function()
-			return AssetService:CreateEditableImageAsync(shownImage)
-		end)
-		if ok and editableImagePreview then
-			shownImage = editableImagePreview
-		else
-			shownImage = nil
-		end
-	end
-
-	self:setState({
-		source = source,
-		imageType = imageType,
-		shownImage = shownImage,
-		productInfo = productInfo,
-	})
-end
-
-function Widget:getProductInfo(assetId: string)
-	local state = self.state
-	if state[assetId] then
-		return state[assetId]
-	end
-	local productInfo = {
-		Name = "",
-		Description = "",
-		Creator = {
-			CreatorType = "",
-			Name = "",
-			Id = -1,
-		},
-	}
-	self:setState({
-		[assetId] = table.clone(productInfo),
-	})
-	task.defer(function()
-		-- GetProductInfo is slow, so we'll do it on a separate thread and fill in data if we get results
-		local numericAssetId = string.match(assetId, "(%d+)")
-		if numericAssetId then
-			local ok, assetProductInfo = pcall(function()
-				return MarketplaceService:GetProductInfo(numericAssetId, Enum.InfoType.Asset)
-			end)
-			if ok then
-				local didMakeChanges = false
-				for key, value in assetProductInfo do
-					if productInfo[key] then
-						productInfo[key] = value
-						didMakeChanges = true
-					end
-				end
-				if didMakeChanges then
-					self:setState({
-						[assetId] = table.clone(productInfo),
-					})
-				end
-			end
-		end
-	end)
-	return productInfo
-end
-
-function Widget:getAvailableSessions()
-	local sessions = {}
-
-	local lockedSourcePaths = {}
-	for _, session in self.state.lockedSessions do
-		lockedSourcePaths[session.sourcePath] = true
-	end
-
-	local selection = self.state.selection
-	if #selection > 0 then
-		local textures = getTexturesFromInstancesNoBatching(selection)
-		for _, textureData in textures do
-			local sourcePath = textureData.instance:GetDebugId() .. "." .. textureData.propertyName
-			if lockedSourcePaths[sourcePath] then
-				continue
-			end
-			lockedSourcePaths[sourcePath] = true
-			local textureState = {
-				source = textureData.instance,
-				propertyName = textureData.propertyName,
-				sourcePath = sourcePath,
-				shownImage = textureData.textureId,
-				imageType = "AssetId",
-				productInfo = self:getProductInfo(textureData.textureId),
-			}
-			table.insert(sessions, textureState)
-		end
-	end
-
-	return sessions
-end
 
 function Widget:willUnmount()
 	self.onSelectionChanged:Disconnect()
 end
 
+
+export type Piece = {
+    id: string,
+    role: string, -- "asset|editable"
+    type: string, --  "image|mesh|meshtexturepack|pbrpack"
+    filePath: string,
+    fileHash: string,
+    uploads: {
+        {
+            assetId: string,
+            decalId: string,
+            fileHash: string,
+            operationId: string
+        }
+    },
+    updatedAt: number,
+    uploadedAt: number, 
+    deletedAt: number
+}
+
+
+function getPieces(): { Piece }
+    print(`poll`)
+    -- todo MI handle errors
+    local res = HttpService:GetAsync("http://localhost:3000/api/pieces")
+    local json = HttpService:JSONDecode(res)
+    -- print(`fetched json updates:  {#json}`)
+    local pieces = json :: { Piece }
+	return pieces
+    -- local tmp_pieces_map = {}
+    -- for _, p in pieces do
+    --     tmp_pieces_map[p.id] = p
+    -- end
+
+	-- return tmp_pieces_map
+end
+
+
+
 function Widget:init()
+	print('Widget:init') 
+	local localPieces = self.state.pieces
 	self.onSelectionChanged = Selection.SelectionChanged:Connect(function()
+		print('selection changed')
 		self:setState({
 			selection = Selection:Get(),
+			pieces = self.state.pieces
 		})
 	end)
 	self:setState({
 		selection = Selection:Get(),
-		lockedSessions = {},
+		pieces = {}
+	})
+	print('Widget:done')
+ 	coroutine.wrap(function()
+        print("WIDGET starting polling")
+ 		while true do	
+			local pieces = getPieces()
+			if #pieces > 0 then
+				print(`there were {#pieces} updates`)
+			end
+			for k, v in pieces do
+				print(k .. '->' .. v.filePath)
+			end
+			wait(5)
+			self:setState({
+				selection = Selection:Get(),
+				pieces = pieces
+			})
+			break
+		end 		
+    end)()
+	
+end
+
+
+
+
+function Widget:render()
+	local instanceWirers = {}
+	print('about to render')
+	if #self.state.selection == 0 and #self.state.pieces == 0 then
+		print('selections are nil')
+		local theme = settings().Studio.Theme
+
+		local element = e("TextLabel", {
+			Size = UDim2.new(0, 0, 0, 0),
+			AutomaticSize = Enum.AutomaticSize.XY,
+			LayoutOrder = 1,
+			Text = "To start iterating on images, select an instance with an image property and click ‘Wire’ or place a bitmap file to a working folder.",
+			Font = Enum.Font.BuilderSansMedium,
+			TextSize = 20,
+			TextColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogButtonText),
+			BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.Light),
+			BorderSizePixel = 0,
+			TextXAlignment = Enum.TextXAlignment.Left,
+		})
+		return element
+	end
+	pieceComponents  = {}
+	print('about to build pieces')
+
+	local k = 1	
+	for _, piece in self.state.pieces do 
+		local newPieceComponent = e(
+			PieceComponent, 
+			{
+				piece = piece,
+				index = k
+			}
+		)
+
+		print('about to set piece component ' .. k)
+		pieceComponents[k] = newPieceComponent
+		k = k + 1
+		print('set piece component')
+	end
+	print('about to build selection')
+
+	for i, selected in self.state.selection do 
+		local newInstanceWirer = e(
+			InstanceWirerComponent, 
+			{
+				instance = selected,
+				index = i
+			})
+		instanceWirers[i] = newInstanceWirer
+	end
+	print('about to build the component')
+	return e("ScrollingFrame", {
+		Size = UDim2.new(1, 0, 1, 0),
+		BackgroundTransparency = 1,
+		CanvasSize = UDim2.new(0, 0, 0, 0),
+		AutomaticCanvasSize = Enum.AutomaticSize.XY,
+		ScrollingDirection = Enum.ScrollingDirection.XY,
+	}, {
+		uiListLayout = e("UIListLayout", {
+			Padding = UDim.new(0, 4),
+			HorizontalAlignment = Enum.HorizontalAlignment.Left,
+			SortOrder = Enum.SortOrder.LayoutOrder,
+		}),
+
+		instanceWirersList = e(
+				"Frame",
+				{
+					Size = UDim2.new(0, 0, 0, 0),
+					BackgroundTransparency = 1,
+					AutomaticSize = Enum.AutomaticSize.XY,
+					LayoutOrder = 1,
+				},
+				Cryo.Dictionary.join({
+					uiListLayout = e("UIListLayout", {
+						Padding = UDim.new(0, 0),
+						HorizontalAlignment = Enum.HorizontalAlignment.Left,
+						SortOrder = Enum.SortOrder.LayoutOrder,
+					}),
+				}, instanceWirers)
+			),
+
+		pieceComponentsList = e(
+			"Frame",
+			{
+				Size = UDim2.new(0, 0, 0, 0),
+				BackgroundTransparency = 1,
+				AutomaticSize = Enum.AutomaticSize.XY,
+				LayoutOrder = 1,
+			},
+			Cryo.Dictionary.join({
+				uiListLayout = e("UIListLayout", {
+					Padding = UDim.new(0, 0),
+					HorizontalAlignment = Enum.HorizontalAlignment.Left,
+					SortOrder = Enum.SortOrder.LayoutOrder,
+				}),
+			}, pieceComponents)
+		)	
 	})
 end
 
-function Widget:onLockTexture(syncableTexture)
-	local lockedSessions = self.state.lockedSessions
-	local sessionId = syncableTexture.state.sessionData.sessionId
-	if sessionId then
-		lockedSessions[sessionId] = syncableTexture.state
-	end
-	self:setState({})
-end
-
-function Widget:onUnlockTexture(syncableTexture, ...)
-	local lockedSessions = self.state.lockedSessions
-	local sessionId = syncableTexture.state.sessionData.sessionId
-	if sessionId then
-		lockedSessions[sessionId] = nil
-	end
-	self:setState({})
-end
-
-function Widget:render()
+function Widget:render2()
 	local sessionTextures = {}
 	local hasSessionTextures = false
 	local availableSessions = self:getAvailableSessions()
