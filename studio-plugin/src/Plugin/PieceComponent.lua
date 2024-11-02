@@ -63,8 +63,6 @@ end
 
 function PieceComponent:init()
 	self:setState(self.props)
-	print('Piece component:init')
-
 end
 
 function PieceComponent.getDerivedStateFromProps(props)
@@ -74,7 +72,6 @@ end
 
 function PieceComponent:render()
 	local state = self.state
-	print('PieceComponent: ' .. state.piece.filePath)
 	local theme = settings().Studio.Theme
 
 	return React.createElement("Frame", {
@@ -129,11 +126,7 @@ function PieceComponent:render()
 				TextSize = 40,
 				LayoutOrder = 1,
 				[React.Event.MouseButton1Click] = function()
-					-- if self.props.hasPolling then
-					-- 	self:onClickDisconnectButton()
-					-- else
-					-- 	self:onClickSyncButton()
-					-- end
+					self.state.onClick()
 				end,
 			}, {
 				e("UIPadding", {

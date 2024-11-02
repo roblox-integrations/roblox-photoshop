@@ -11,10 +11,11 @@ local Cryo = require(Packages.Cryo)
 local e = React.createElement
 
 local Widget = React.Component:extend("Widget")
--- local SyncableTexture = require(script.Parent.SyncableTexture)
 local InstanceWirerComponent = require(script.Parent.InstanceWirerComponent)
 local PieceComponent = require(script.Parent.PieceComponent)
+local PieceDetailsComponent = require(script.Parent.PieceDetailsComponent)
 local TextureProperties = require(script.Parent.TextureProperties)
+
 type ImageType = "None" | "AssetId" | "BMP"
 
 local DEBUG_USE_EDITABLE_IMAGES = true
@@ -24,7 +25,8 @@ end)
 if not (ok and areEditableImagesEnabled) then
 	DEBUG_USE_EDITABLE_IMAGES = false
 end
-
+local MODE_LIST = 0
+local MODE_PIECE_DETAILS = 1
 
 
 function Widget:willUnmount()
@@ -69,20 +71,29 @@ function getPieces(): { Piece }
 end
 
 
-
 function Widget:init()
 	print('Widget:init') 
 	local localPieces = self.state.pieces
 	self.onSelectionChanged = Selection.SelectionChanged:Connect(function()
 		print('selection changed')
-		self:setState({
+		-- if self.state ~= nil then  
+		-- 	print('update current state')
+		-- 	local st = self.state 
+		-- 	st.selection = Selection:Get(),
+		-- 	self.setState(st)
+		-- else  
+		-- 	print('set new state')
+			self:setState({
 			selection = Selection:Get(),
-			pieces = self.state.pieces
-		})
+			pieces = self.state.pieces,
+			mode = self.state.mode
+			})
+		-- end 
 	end)
 	self:setState({
 		selection = Selection:Get(),
-		pieces = {}
+		pieces = {},
+		mode = MODE_LIST
 	})
 	print('Widget:done')
  	coroutine.wrap(function()
@@ -108,10 +119,145 @@ end
 
 
 
-
 function Widget:render()
-	local instanceWirers = {}
+	
 	print('about to render')
+	local theme = settings().Studio.Theme
+
+	local i = 1
+	local elements = {}
+	while i < 100 do
+		
+		local sourceText = e('Frame', {				
+			Size = UDim2.new(0, 0, 0, 0),
+			BackgroundTransparency = 1,
+			AutomaticSize = Enum.AutomaticSize.XY,
+			LayoutOrder = 1,
+			}, {
+				Cryo.Dictionary.join({
+					uiListLayout = e("UIListLayout", {
+						Padding = UDim.new(0, 10),
+						HorizontalAlignment = Enum.HorizontalAlignment.Left,
+						SortOrder = Enum.SortOrder.LayoutOrder,
+						FillDirection = Enum.FillDirection.Horizontal, 
+						VerticalAlignment =  Enum.VerticalAlignment.Center
+					}),
+				}, {
+					e('ImageLabel', {
+						
+						Size = UDim2.new(0, 50, 0, 50),
+						AutomaticSize = Enum.AutomaticSize.XY,
+						BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.Light),
+						BorderSizePixel = 0,
+						Image='http://www.roblox.com/asset/?id=699259085'
+					}),
+					e('TextLabel', {
+						Size = UDim2.new(0, 0, 0, 0),
+						AutomaticSize = Enum.AutomaticSize.XY,
+						Text = "Item right " .. -i,
+						Font = Enum.Font.BuilderSansMedium,
+						TextSize = 20,
+						TextColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogButtonText),
+						BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.Light),
+						BorderSizePixel = 0,
+						TextXAlignment = Enum.TextXAlignment.Left
+						
+					})
+
+				})
+		
+
+		})
+		elements[i] = sourceText
+		i = i +1
+	end
+	
+	print('elements count: ' .. #elements)
+
+	local elemen = e("ScrollingFrame", {
+			Size = UDim2.new(1, 0, 1, 0),
+			BackgroundTransparency = 1,
+			CanvasSize = UDim2.new(0, 0, 0, 0),
+			AutomaticCanvasSize = Enum.AutomaticSize.XY,
+			ScrollingDirection = Enum.ScrollingDirection.XY,
+	}, {
+		Cryo.Dictionary.join({
+			uiListLayout = e("UIListLayout", {
+				Padding = UDim.new(0, 10),
+				HorizontalAlignment = Enum.HorizontalAlignment.Left,
+				SortOrder = Enum.SortOrder.LayoutOrder,
+			}),
+		}, elements)
+	}
+
+	)
+	if true then return elemen end
+
+	local element = e("ScrollingFrame", {
+		Size = UDim2.new(1, 0, 1, 0),
+		BackgroundTransparency = 1,
+		CanvasSize = UDim2.new(0, 0, 0, 0),
+		AutomaticCanvasSize = Enum.AutomaticSize.XY,
+		ScrollingDirection = Enum.ScrollingDirection.XY,
+	}, {
+		uiListLayout = e("UIListLayout", {
+			Padding = UDim.new(0, 4),
+			HorizontalAlignment = Enum.HorizontalAlignment.Left,
+			SortOrder = Enum.SortOrder.LayoutOrder,
+		}),
+		modeSwitcher = e("TextButton", {
+			Text = 'Switch',
+			AutomaticSize = Enum.AutomaticSize.XY,
+			Size = UDim2.new(0, 0, 0, 0),
+			TextColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogMainButtonText),
+			BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogMainButton),
+			BorderSizePixel = 0,
+			Font = Enum.Font.BuilderSansBold,
+			TextSize = 40,
+			LayoutOrder = 0,
+			[React.Event.MouseButton1Click] = function()
+				local lMode = self.state.mode+1
+				if lMode > MODE_PIECE_DETAILS then
+					lMode = MODE_LIST
+				end
+				local st = self.state
+				st.mode = lMode
+				self:setState(st)
+			end
+		}),
+		content =  if self.state.mode == MODE_LIST then self:renderList() else self:renderPieceDetails(),
+
+	})
+
+	return element
+end
+
+function Widget:renderPieceDetails()
+
+	return e("ScrollingFrame", {
+		Size = UDim2.new(1, 0, 1, 0),
+		BackgroundTransparency = 1,
+		CanvasSize = UDim2.new(0, 0, 0, 0),
+		AutomaticCanvasSize = Enum.AutomaticSize.XY,
+		ScrollingDirection = Enum.ScrollingDirection.XY,
+	}, {
+		uiListLayout = e("UIListLayout", {
+			Padding = UDim.new(0, 4),
+			HorizontalAlignment = Enum.HorizontalAlignment.Left,
+			SortOrder = Enum.SortOrder.LayoutOrder,
+		}),
+
+		pieceDetails = e(PieceDetailsComponent, {
+				piece = self.state.currentPiece,
+				selection = self.state.selection
+			}
+		),
+	})
+end
+
+
+function Widget:renderList()
+	local instanceWirers = {}
 	if #self.state.selection == 0 and #self.state.pieces == 0 then
 		print('selections are nil')
 		local theme = settings().Studio.Theme
@@ -130,8 +276,8 @@ function Widget:render()
 		})
 		return element
 	end
-	pieceComponents  = {}
-	print('about to build pieces')
+	local pieceComponents  = {}
+	-- print('about to build pieces')
 
 	local k = 1	
 	for _, piece in self.state.pieces do 
@@ -139,27 +285,23 @@ function Widget:render()
 			PieceComponent, 
 			{
 				piece = piece,
-				index = k
+				index = k,
+				onClick = function()
+					self.state.mode = MODE_PIECE_DETAILS
+					local st = self.state
+					st.currentPiece = piece
+					self:setState(st)
+				end
 			}
 		)
 
-		print('about to set piece component ' .. k)
+		-- print('about to set piece component ' .. k)
 		pieceComponents[k] = newPieceComponent
 		k = k + 1
-		print('set piece component')
+		-- print('set piece component')
 	end
-	print('about to build selection')
+	-- print('about to build selection')
 
-	for i, selected in self.state.selection do 
-		local newInstanceWirer = e(
-			InstanceWirerComponent, 
-			{
-				instance = selected,
-				index = i
-			})
-		instanceWirers[i] = newInstanceWirer
-	end
-	print('about to build the component')
 	return e("ScrollingFrame", {
 		Size = UDim2.new(1, 0, 1, 0),
 		BackgroundTransparency = 1,
@@ -209,105 +351,5 @@ function Widget:render()
 	})
 end
 
-function Widget:render2()
-	local sessionTextures = {}
-	local hasSessionTextures = false
-	local availableSessions = self:getAvailableSessions()
-	for i, stateData in availableSessions do
-		local newTexture = e(
-			SyncableTexture,
-			Cryo.Dictionary.join(stateData, {
-				index = i,
-				sessionData = {},
-				hasPolling = false,
-				onSessionDataChanged = function(syncableTexture)
-					self:onLockTexture(syncableTexture)
-				end,
-			})
-		)
-		sessionTextures[stateData.sourcePath] = newTexture
-		hasSessionTextures = true
-	end
-
-	local lockedTextures = {}
-	local hasLockedTextures = false
-	local i = 1
-	for _, stateData in self.state.lockedSessions do
-		local newTexture = e(
-			SyncableTexture,
-			Cryo.Dictionary.join(stateData, {
-				index = #availableSessions + i,
-				hasPolling = true,
-				onSessionDataChanged = function(syncableTexture)
-					self:onUnlockTexture(syncableTexture)
-				end,
-			})
-		)
-		lockedTextures[stateData.sourcePath] = newTexture
-		hasLockedTextures = true
-		i += 1
-	end
-
-	local theme = settings().Studio.Theme
-
-	return e("ScrollingFrame", {
-		Size = UDim2.new(1, 0, 1, 0),
-		BackgroundTransparency = 1,
-		CanvasSize = UDim2.new(0, 0, 0, 0),
-		AutomaticCanvasSize = Enum.AutomaticSize.XY,
-		ScrollingDirection = Enum.ScrollingDirection.XY,
-	}, {
-		uiListLayout = e("UIListLayout", {
-			Padding = UDim.new(0, 4),
-			HorizontalAlignment = Enum.HorizontalAlignment.Left,
-			SortOrder = Enum.SortOrder.LayoutOrder,
-		}),
-		selected = if hasSessionTextures
-			then e(
-				"Frame",
-				{
-					Size = UDim2.new(0, 0, 0, 0),
-					BackgroundTransparency = 1,
-					AutomaticSize = Enum.AutomaticSize.XY,
-					LayoutOrder = 1,
-				},
-				Cryo.Dictionary.join({
-					uiListLayout = e("UIListLayout", {
-						Padding = UDim.new(0, 0),
-						HorizontalAlignment = Enum.HorizontalAlignment.Left,
-						SortOrder = Enum.SortOrder.LayoutOrder,
-					}),
-				}, sessionTextures)
-			)
-			else nil,
-		spacer = if hasSessionTextures and hasLockedTextures
-			then e("Frame", {
-				Size = UDim2.new(1, 0, 0, 4),
-				BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.CheckedFieldBorder),
-				BorderSizePixel = 0,
-				LayoutOrder = 2,
-			})
-			else nil,
-		activeEdits = if hasLockedTextures
-			then e(
-				"Frame",
-				{
-					Size = UDim2.new(1, 0, 0, 0),
-					BackgroundTransparency = 0.5,
-					BorderSizePixel = 0,
-					AutomaticSize = Enum.AutomaticSize.Y,
-					LayoutOrder = 3,
-				},
-				Cryo.Dictionary.join({
-					uiListLayout = e("UIListLayout", {
-						Padding = UDim.new(0, 4),
-						HorizontalAlignment = Enum.HorizontalAlignment.Left,
-						SortOrder = Enum.SortOrder.LayoutOrder,
-					}),
-				}, lockedTextures)
-			)
-			else nil,
-	})
-end
 
 return Widget

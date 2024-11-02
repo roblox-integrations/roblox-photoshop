@@ -2,11 +2,15 @@
 local PhotoshopIntegration = script:FindFirstAncestor("PhotoshopIntegration")
 local Packages = PhotoshopIntegration.Packages
 
+local Cryo = require(Packages.Cryo)
+
 local HttpService = game:GetService("HttpService")
 
 local React = require(Packages.React)
 
 local e = React.createElement
+
+local TextureProperties = require(script.Parent.TextureProperties)
 
 local InstanceWirerComponent = React.Component:extend("InstanceWirerComponent")
 
@@ -84,30 +88,13 @@ type SessionData = {
 
 
 function InstanceWirerComponent:onClickSyncButton()
-	local state: StateData = self.state
-	local shownImage = state.shownImage
-	if state.imageType == "AssetId" and shownImage == "" then
-		return
-	end
-	if not state.source then
-		return
-	end
-	local ok, response = pcall(function()
-		-- call sync long running method and return
-		return false
-	end)
-	if not ok or not response.Success then
-		if typeof(response) == "table" then
-			warn("Request failed:", response.StatusCode, response.StatusMessage)
-		else
-			warn("Request failed:", response)
-		end
-		return
-	end
+
 end
 
 function InstanceWirerComponent:didMount()
-	 -- add listener for tags changes
+	 -- TODO MI add listener for tags changes
+
+
 		-- if self.state.source and self.state.propertyName then
 		-- 	self.state.source:GetPropertyChangedSignal(self.state.propertyName):Connect(function()
 		-- 		self.state.shownImage = self.state.source[self.state.propertyName]
@@ -121,7 +108,12 @@ function InstanceWirerComponent:willUnmount()
 end
 
 function InstanceWirerComponent:init()
+	print('className: ' .. self.props.instance.ClassName)
+	self.props.properties = TextureProperties[self.props.instance.ClassName]
+	-- TODO MI load images
 	self:setState(self.props)
+
+	
 end
 
 function InstanceWirerComponent.getDerivedStateFromProps(props)
@@ -133,7 +125,79 @@ function InstanceWirerComponent:render()
 	print('InstanceWirer: ' .. state.instance.Name)
 	-- state.instance
 	-- state.index 
+
+
+	
+
+
+	if #self.state.properties == 0 then return nil end
 	local theme = settings().Studio.Theme
+
+	local properties =  {}
+	for i, property in self.state.properties do
+		print(self.state.instance.Name .. ' : ' .. property)
+		local p = 
+		e('Frame', {
+			BackgroundTransparency = 1,
+			Size = UDim2.new(0, 0, 0, 120),
+			AutomaticSize = Enum.AutomaticSize.X,
+			LayoutOrder = i
+		}, 
+			{
+				uiListLayout = e("UIListLayout", {
+					Padding = UDim.new(0, 10),
+					HorizontalAlignment = Enum.HorizontalAlignment.Left,
+					VerticalAlignment = Enum.VerticalAlignment.Center,
+					FillDirection = Enum.FillDirection.Horizontal,
+					SortOrder = Enum.SortOrder.LayoutOrder,
+				}),
+				propertyName = e("TextLabel", {
+					Size = UDim2.new(0, 0, 0, 0),
+					AutomaticSize = Enum.AutomaticSize.XY,
+					LayoutOrder = 2,
+					Text = state.properties[i],
+					Font = Enum.Font.BuilderSansMedium,
+					TextSize = 20,
+					TextColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogButtonText),
+					BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.Light),
+					BorderSizePixel = 0,
+					TextXAlignment = Enum.TextXAlignment.Left,
+				}, {
+					e("UIPadding", {
+						PaddingLeft = UDim.new(0, 5),
+						PaddingRight = UDim.new(0, 5),
+						PaddingTop = UDim.new(0, 5),
+						PaddingBottom = UDim.new(0, 5),
+					}),
+				}),
+
+				syncButton = e("TextButton", {
+					Text = 'Wire',
+					AutomaticSize = Enum.AutomaticSize.XY,
+					Size = UDim2.new(0, 0, 0, 0),
+					TextColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogMainButtonText),
+					BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogMainButton),
+					BorderSizePixel = 0,
+					Font = Enum.Font.BuilderSansBold,
+					TextSize = 40,
+					LayoutOrder = 1,
+					[React.Event.MouseButton1Click] = function()
+						print('Wire button clicked')
+					end,
+					}, 
+					{
+						e("UIPadding", {
+							PaddingLeft = UDim.new(0, 5),
+							PaddingRight = UDim.new(0, 5),
+							PaddingTop = UDim.new(0, 5),
+							PaddingBottom = UDim.new(0, 5),
+						}),
+					}),
+			}
+		)
+		properties[i] = p;
+	end
+
 
 	return React.createElement("Frame", {
 		BackgroundTransparency = 1,
@@ -155,14 +219,26 @@ function InstanceWirerComponent:render()
 			FillDirection = Enum.FillDirection.Horizontal,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 		}),
-		-- texturePreview = e("ImageLabel", {
-		-- 	Size = UDim2.new(1, 0, 1, 0),
-		-- 	BackgroundTransparency = 1,
-		-- 	ImageTransparency = 0,
-		-- 	SizeConstraint = Enum.SizeConstraint.RelativeYY,
-		-- 	LayoutOrder = 1,
-		-- 	Image = if state.imageType == "AssetId" then state.shownImage else "",
-		-- }),
+		sourceText = e("TextLabel", {
+			Size = UDim2.new(0, 0, 0, 0),
+			AutomaticSize = Enum.AutomaticSize.XY,
+			LayoutOrder = 2,
+			Text = state.instance.Name,
+			Font = Enum.Font.BuilderSansMedium,
+			TextSize = 20,
+			TextColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogButtonText),
+			BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.Light),
+			BorderSizePixel = 0,
+			TextXAlignment = Enum.TextXAlignment.Left,
+		}, {
+			e("UIPadding", {
+				PaddingLeft = UDim.new(0, 5),
+				PaddingRight = UDim.new(0, 5),
+				PaddingTop = UDim.new(0, 5),
+				PaddingBottom = UDim.new(0, 5),
+			}),
+		}),
+
 		syncDetails = e("Frame", {
 			BackgroundTransparency = 1,
 			Size = UDim2.new(0, 0, 1, 0),
@@ -176,50 +252,13 @@ function InstanceWirerComponent:render()
 				VerticalAlignment = Enum.VerticalAlignment.Center,
 				SortOrder = Enum.SortOrder.LayoutOrder,
 			}),
-			syncButton = e("TextButton", {
-				Text = if self.props.hasPolling then "Unlink" else "Edit",
-				AutomaticSize = Enum.AutomaticSize.XY,
-				Size = UDim2.new(0, 0, 0, 0),
-				TextColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogMainButtonText),
-				BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogMainButton),
-				BorderSizePixel = 0,
-				Font = Enum.Font.BuilderSansBold,
-				TextSize = 40,
-				LayoutOrder = 1,
-				[React.Event.MouseButton1Click] = function()
-					-- if self.props.hasPolling then
-					-- 	self:onClickDisconnectButton()
-					-- else
-					-- 	self:onClickSyncButton()
-					-- end
-				end,
-			}, {
-				e("UIPadding", {
-					PaddingLeft = UDim.new(0, 5),
-					PaddingRight = UDim.new(0, 5),
-					PaddingTop = UDim.new(0, 5),
-					PaddingBottom = UDim.new(0, 5),
+			Cryo.Dictionary.join({
+				uiListLayout = e("UIListLayout", {
+					Padding = UDim.new(0, 0),
+					HorizontalAlignment = Enum.HorizontalAlignment.Left,
+					SortOrder = Enum.SortOrder.LayoutOrder,
 				}),
-			}),
-			sourceText = e("TextLabel", {
-				Size = UDim2.new(0, 0, 0, 0),
-				AutomaticSize = Enum.AutomaticSize.XY,
-				LayoutOrder = 2,
-				Text = state.instance.Name,
-				Font = Enum.Font.BuilderSansMedium,
-				TextSize = 20,
-				TextColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogButtonText),
-				BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.Light),
-				BorderSizePixel = 0,
-				TextXAlignment = Enum.TextXAlignment.Left,
-			}, {
-				e("UIPadding", {
-					PaddingLeft = UDim.new(0, 5),
-					PaddingRight = UDim.new(0, 5),
-					PaddingTop = UDim.new(0, 5),
-					PaddingBottom = UDim.new(0, 5),
-				}),
-			}),
+			}, properties)
 		}),
 	})
 end
