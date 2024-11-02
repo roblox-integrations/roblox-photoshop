@@ -15,7 +15,7 @@ local InstanceWirerComponent = require(script.Parent.InstanceWirerComponent)
 local PieceComponent = require(script.Parent.PieceComponent)
 local PieceDetailsComponent = require(script.Parent.PieceDetailsComponent)
 local TextureProperties = require(script.Parent.TextureProperties)
-
+local PluginEnum = require(script.Parent.Enum)
 type ImageType = "None" | "AssetId" | "BMP"
 
 local DEBUG_USE_EDITABLE_IMAGES = true
@@ -106,7 +106,7 @@ function Widget:init()
 			for k, v in pieces do
 				print(k .. '->' .. v.filePath)
 			end
-			wait(5)
+			wait(1)
 			self:setState({
 				selection = Selection:Get(),
 				pieces = pieces
@@ -121,77 +121,12 @@ end
 
 function Widget:render()
 	
+
 	print('about to render')
 	local theme = settings().Studio.Theme
 
-	local i = 1
-	local elements = {}
-	while i < 100 do
-		
-		local sourceText = e('Frame', {				
-			Size = UDim2.new(0, 0, 0, 0),
-			BackgroundTransparency = 1,
-			AutomaticSize = Enum.AutomaticSize.XY,
-			LayoutOrder = 1,
-			}, {
-				Cryo.Dictionary.join({
-					uiListLayout = e("UIListLayout", {
-						Padding = UDim.new(0, 10),
-						HorizontalAlignment = Enum.HorizontalAlignment.Left,
-						SortOrder = Enum.SortOrder.LayoutOrder,
-						FillDirection = Enum.FillDirection.Horizontal, 
-						VerticalAlignment =  Enum.VerticalAlignment.Center
-					}),
-				}, {
-					e('ImageLabel', {
-						
-						Size = UDim2.new(0, 50, 0, 50),
-						AutomaticSize = Enum.AutomaticSize.XY,
-						BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.Light),
-						BorderSizePixel = 0,
-						Image='http://www.roblox.com/asset/?id=699259085'
-					}),
-					e('TextLabel', {
-						Size = UDim2.new(0, 0, 0, 0),
-						AutomaticSize = Enum.AutomaticSize.XY,
-						Text = "Item right " .. -i,
-						Font = Enum.Font.BuilderSansMedium,
-						TextSize = 20,
-						TextColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogButtonText),
-						BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.Light),
-						BorderSizePixel = 0,
-						TextXAlignment = Enum.TextXAlignment.Left
-						
-					})
-
-				})
-		
-
-		})
-		elements[i] = sourceText
-		i = i +1
-	end
-	
-	print('elements count: ' .. #elements)
-
-	local elemen = e("ScrollingFrame", {
-			Size = UDim2.new(1, 0, 1, 0),
-			BackgroundTransparency = 1,
-			CanvasSize = UDim2.new(0, 0, 0, 0),
-			AutomaticCanvasSize = Enum.AutomaticSize.XY,
-			ScrollingDirection = Enum.ScrollingDirection.XY,
-	}, {
-		Cryo.Dictionary.join({
-			uiListLayout = e("UIListLayout", {
-				Padding = UDim.new(0, 10),
-				HorizontalAlignment = Enum.HorizontalAlignment.Left,
-				SortOrder = Enum.SortOrder.LayoutOrder,
-			}),
-		}, elements)
-	}
-
-	)
-	if true then return elemen end
+    -- local elemen = renderPlayground()
+	-- if true then return elemen end
 
 	local element = e("ScrollingFrame", {
 		Size = UDim2.new(1, 0, 1, 0),
@@ -231,6 +166,7 @@ function Widget:render()
 
 	return element
 end
+
 
 function Widget:renderPieceDetails()
 
@@ -277,7 +213,7 @@ function Widget:renderList()
 		return element
 	end
 	local pieceComponents  = {}
-	-- print('about to build pieces')
+	print('about to build pieces')
 
 	local k = 1	
 	for _, piece in self.state.pieces do 
@@ -295,10 +231,10 @@ function Widget:renderList()
 			}
 		)
 
-		-- print('about to set piece component ' .. k)
+		print('about to set piece component ' .. k)
 		pieceComponents[k] = newPieceComponent
 		k = k + 1
-		-- print('set piece component')
+		print('set piece component')
 	end
 	-- print('about to build selection')
 
@@ -315,22 +251,22 @@ function Widget:renderList()
 			SortOrder = Enum.SortOrder.LayoutOrder,
 		}),
 
-		instanceWirersList = e(
-				"Frame",
-				{
-					Size = UDim2.new(0, 0, 0, 0),
-					BackgroundTransparency = 1,
-					AutomaticSize = Enum.AutomaticSize.XY,
-					LayoutOrder = 1,
-				},
-				Cryo.Dictionary.join({
-					uiListLayout = e("UIListLayout", {
-						Padding = UDim.new(0, 0),
-						HorizontalAlignment = Enum.HorizontalAlignment.Left,
-						SortOrder = Enum.SortOrder.LayoutOrder,
-					}),
-				}, instanceWirers)
-			),
+		-- instanceWirersList = e(
+		-- 		"Frame",
+		-- 		{
+		-- 			Size = UDim2.new(0, 0, 0, 0),
+		-- 			BackgroundTransparency = 1,
+		-- 			AutomaticSize = Enum.AutomaticSize.XY,
+		-- 			LayoutOrder = 1,
+		-- 		},
+		-- 		Cryo.Dictionary.join({
+		-- 			uiListLayout = e("UIListLayout", {
+		-- 				Padding = UDim.new(0, 0),
+		-- 				HorizontalAlignment = Enum.HorizontalAlignment.Left,
+		-- 				SortOrder = Enum.SortOrder.LayoutOrder,
+		-- 			}),
+		-- 		}, instanceWirers)
+		-- 	),
 
 		pieceComponentsList = e(
 			"Frame",
@@ -351,5 +287,97 @@ function Widget:renderList()
 	})
 end
 
+function renderPlayground()
 
+	local i = 1
+	local elements = {}
+	while i < 100 do
+		
+		local sourceText = e(
+			'Frame', {				
+			Size = UDim2.new(0, 0, 0, 0),
+			BackgroundTransparency = 1,
+			AutomaticSize = Enum.AutomaticSize.XY,
+			LayoutOrder = i,
+			}, {
+				Cryo.Dictionary.join({
+					uiListLayout = e("UIListLayout", {
+						Padding = UDim.new(0, PluginEnum.PaddingHorizontal),
+						HorizontalAlignment = Enum.HorizontalAlignment.Left,
+						SortOrder = Enum.SortOrder.LayoutOrder,
+						FillDirection = Enum.FillDirection.Horizontal, 
+						VerticalAlignment =  Enum.VerticalAlignment.Center
+					}),
+				}, {
+					uiPadding = e("UIPadding", {
+						PaddingLeft = UDim.new(0, PluginEnum.PaddingHorizontal),
+						PaddingRight = UDim.new(0, PluginEnum.PaddingHorizontal),
+						PaddingTop = UDim.new(0, PluginEnum.PaddingVertical),
+						PaddingBottom = UDim.new(0, PluginEnum.PaddingVertical),
+						
+					}),
+			
+					imagePreview = e('ImageLabel', {
+						
+						Size = UDim2.new(0, PluginEnum.PreviewSize, 0, PluginEnum.PreviewSize),
+						AutomaticSize = Enum.AutomaticSize.XY,
+						BackgroundColor3 = PluginEnum.ColorBackground,
+						BorderSizePixel = 0,
+						Image='http://www.roblox.com/asset/?id=699259085',
+						LayoutOrder = 1,
+					}),
+					name = e('TextLabel', {
+						Size = UDim2.new(0, 0, 0, 0),
+						AutomaticSize = Enum.AutomaticSize.XY,
+						Text = "Item right " .. -i,
+						Font = Enum.Font.BuilderSansMedium,
+						TextSize = PluginEnum.FontSizeTextPrimary,
+						TextColor3 = PluginEnum.ColorTextPrimary,
+						BackgroundColor3 = PluginEnum.ColorBackground,
+						BorderSizePixel = 0,
+						TextXAlignment = Enum.TextXAlignment.Left,
+						LayoutOrder = 2
+					}),
+					openButton = e("TextButton", {
+						Text = 'Open',
+						AutomaticSize = Enum.AutomaticSize.XY,
+						Size = UDim2.new(0, 0, 0, 0),
+						TextColor3 = PluginEnum.ColorButtonNavigationText,
+						BackgroundColor3 = PluginEnum.ColorButtonNavigationBackground,
+						BorderSizePixel = 0,
+						Font = Enum.Font.BuilderSansBold,
+						TextSize = PluginEnum.FontSizeNavigationButton,
+						LayoutOrder = 3,
+						[React.Event.MouseButton1Click] = function()
+							self.state.onClick()
+						end,
+					})
+				})
+		})
+
+		elements[i] = sourceText
+		i = i +1
+	end
+	
+	print('elements count: ' .. #elements)
+
+	local elemen = e("ScrollingFrame", {
+			Size = UDim2.new(1, 0, 1, 0),
+			BackgroundTransparency = 1,
+			CanvasSize = UDim2.new(0, 0, 0, 0),
+			AutomaticCanvasSize = Enum.AutomaticSize.XY,
+			ScrollingDirection = Enum.ScrollingDirection.XY,
+	}, {
+		Cryo.Dictionary.join({
+			uiListLayout = e("UIListLayout", {
+				Padding = UDim.new(0, 10),
+				HorizontalAlignment = Enum.HorizontalAlignment.Left,
+				SortOrder = Enum.SortOrder.LayoutOrder,
+			}),
+		}, elements)
+	}
+
+	)
+	return elemen
+end
 return Widget
