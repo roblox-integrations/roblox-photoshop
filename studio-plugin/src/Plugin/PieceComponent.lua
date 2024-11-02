@@ -76,10 +76,9 @@ function PieceComponent:render()
 	print('about to render piece component')
 	return e('Frame', {				
 		Size = UDim2.new(0, 0, 0, 0),
-		BackgroundTransparency = 1,
 		AutomaticSize = Enum.AutomaticSize.XY,
 		LayoutOrder = self.props.index, 
-		BackgroundColor3
+		BackgroundTransparency = 1
 		},
 		{
 			Cryo.Dictionary.join({

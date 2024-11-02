@@ -106,12 +106,12 @@ function Widget:init()
 			for k, v in pieces do
 				print(k .. '->' .. v.filePath)
 			end
-			wait(1)
 			self:setState({
 				selection = Selection:Get(),
 				pieces = pieces
 			})
 			break
+
 		end 		
     end)()
 	
@@ -213,8 +213,6 @@ function Widget:renderList()
 		return element
 	end
 	local pieceComponents  = {}
-	print('about to build pieces')
-
 	local k = 1	
 	for _, piece in self.state.pieces do 
 		local newPieceComponent = e(
@@ -230,20 +228,14 @@ function Widget:renderList()
 				end
 			}
 		)
-
-		print('about to set piece component ' .. k)
 		pieceComponents[k] = newPieceComponent
 		k = k + 1
-		print('set piece component')
 	end
 	-- print('about to build selection')
 
-	return e("ScrollingFrame", {
-		Size = UDim2.new(1, 0, 1, 0),
+	return e("Frame", {
+		Size = UDim2.new(0, 0, 0, 0),
 		BackgroundTransparency = 1,
-		CanvasSize = UDim2.new(0, 0, 0, 0),
-		AutomaticCanvasSize = Enum.AutomaticSize.XY,
-		ScrollingDirection = Enum.ScrollingDirection.XY,
 	}, {
 		uiListLayout = e("UIListLayout", {
 			Padding = UDim.new(0, 4),
@@ -251,22 +243,23 @@ function Widget:renderList()
 			SortOrder = Enum.SortOrder.LayoutOrder,
 		}),
 
-		-- instanceWirersList = e(
-		-- 		"Frame",
-		-- 		{
-		-- 			Size = UDim2.new(0, 0, 0, 0),
-		-- 			BackgroundTransparency = 1,
-		-- 			AutomaticSize = Enum.AutomaticSize.XY,
-		-- 			LayoutOrder = 1,
-		-- 		},
-		-- 		Cryo.Dictionary.join({
-		-- 			uiListLayout = e("UIListLayout", {
-		-- 				Padding = UDim.new(0, 0),
-		-- 				HorizontalAlignment = Enum.HorizontalAlignment.Left,
-		-- 				SortOrder = Enum.SortOrder.LayoutOrder,
-		-- 			}),
-		-- 		}, instanceWirers)
-		-- 	),
+
+		instanceWirersList = e(
+				"Frame",
+				{
+					Size = UDim2.new(0, 0, 0, 0),
+					BackgroundTransparency = 1,
+					AutomaticSize = Enum.AutomaticSize.XY,
+					LayoutOrder = 1,
+				},
+				Cryo.Dictionary.join({
+					uiListLayout = e("UIListLayout", {
+						Padding = UDim.new(0, 0),
+						HorizontalAlignment = Enum.HorizontalAlignment.Left,
+						SortOrder = Enum.SortOrder.LayoutOrder,
+					}),
+				}, instanceWirers)
+			),
 
 		pieceComponentsList = e(
 			"Frame",

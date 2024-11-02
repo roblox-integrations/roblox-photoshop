@@ -10,6 +10,7 @@ local e = React.createElement
 local PieceDetailsComponent = React.Component:extend("PieceDetailsComponent")
 
 local InstanceWirerComponent = require(script.Parent.InstanceWirerComponent)
+local PluginEnum = require(script.Parent.Enum)
 
 
 function PieceDetailsComponent:onClickSyncButton()
@@ -58,8 +59,6 @@ end
 
 function PieceDetailsComponent:render()
 	local state = self.state
-
-	local theme = settings().Studio.Theme
 	print('PieceDetailsComponent render')
 	local instanceWirers = {}
 	for i, selected in self.state.selection do 
@@ -72,8 +71,8 @@ function PieceDetailsComponent:render()
 		instanceWirers[i] = newInstanceWirer
 	end
 
-	print('PieceDetailsComponent past wirers')
-	
+	print('PieceDetailsComponent past wirers ' .. PluginEnum.FontSizeTextPrimary)
+
 	return React.createElement("Frame", {
 		BackgroundTransparency = 1,
 		Size = UDim2.new(0, 0, 0, 120),
@@ -100,7 +99,7 @@ function PieceDetailsComponent:render()
 			ImageTransparency = 0,
 			SizeConstraint = Enum.SizeConstraint.RelativeYY,
 			LayoutOrder = 1,
-			Image =  "",
+			Image =  'http://www.roblox.com/asset/?id=699259085',
 		}),
 		syncDetails = e("Frame", {
 			BackgroundTransparency = 1,
@@ -115,50 +114,108 @@ function PieceDetailsComponent:render()
 					VerticalAlignment = Enum.VerticalAlignment.Center,
 					SortOrder = Enum.SortOrder.LayoutOrder,
 				}),
-				sourceText = e("TextLabel", {
+				name = e('TextLabel', {
 					Size = UDim2.new(0, 0, 0, 0),
 					AutomaticSize = Enum.AutomaticSize.XY,
-					LayoutOrder = 2,
 					Text = state.piece.filePath,
 					Font = Enum.Font.BuilderSansMedium,
-					TextSize = 20,
-					TextColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogButtonText),
-					BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.Light),
+					TextSize = PluginEnum.FontSizeTextPrimary,
+					TextColor3 = PluginEnum.ColorTextPrimary,
+					BackgroundColor3 = PluginEnum.ColorBackground,
 					BorderSizePixel = 0,
 					TextXAlignment = Enum.TextXAlignment.Left,
-				}, {
-					e("UIPadding", {
-						PaddingLeft = UDim.new(0, 5),
-						PaddingRight = UDim.new(0, 5),
-						PaddingTop = UDim.new(0, 5),
-						PaddingBottom = UDim.new(0, 5),
-					}),
+					LayoutOrder = 2
 				}),
-		}),
-		instanceWirers = e('Frame', {
-			BackgroundTransparency = 1,
-			Size = UDim2.new(0, 0, 1, 0),
-			AutomaticSize = Enum.AutomaticSize.X,
-			LayoutOrder = 3,
-		}, {
-				uiListLayout = e("UIListLayout", {
-					Padding = UDim.new(0, 10),
-					HorizontalAlignment = Enum.HorizontalAlignment.Left,
-					VerticalAlignment = Enum.VerticalAlignment.Center,
-					SortOrder = Enum.SortOrder.LayoutOrder,
-				}),
-				Cryo.Dictionary.join({
-					uiListLayout = e("UIListLayout", {
-						Padding = UDim.new(0, 0),
-						HorizontalAlignment = Enum.HorizontalAlignment.Left,
-						SortOrder = Enum.SortOrder.LayoutOrder,
-					}),
-				}, instanceWirers)
+		})
+		-- instanceWirers = e('Frame', {
+		-- 	BackgroundTransparency = 1,
+		-- 	Size = UDim2.new(0, 0, 1, 0),
+		-- 	AutomaticSize = Enum.AutomaticSize.X,
+		-- 	LayoutOrder = 3,
+		-- }, {
+		-- 		uiListLayout = e("UIListLayout", {
+		-- 			Padding = UDim.new(0, 10),
+		-- 			HorizontalAlignment = Enum.HorizontalAlignment.Left,
+		-- 			VerticalAlignment = Enum.VerticalAlignment.Center,
+		-- 			SortOrder = Enum.SortOrder.LayoutOrder,
+		-- 		}),
+		-- 		Cryo.Dictionary.join({
+		-- 			uiListLayout = e("UIListLayout", {
+		-- 				Padding = UDim.new(0, 0),
+		-- 				HorizontalAlignment = Enum.HorizontalAlignment.Left,
+		-- 				SortOrder = Enum.SortOrder.LayoutOrder,
+		-- 			}),
+		-- 		}, instanceWirers)
 				
-			}
+		-- 	}
 			
-		)
+		-- )
 	})
 end
 
+
+function PieceDetailsComponent:renderPropertyWires()
+	return e('Frame', {				
+		Size = UDim2.new(0, 0, 0, 0),
+		AutomaticSize = Enum.AutomaticSize.XY,
+		LayoutOrder = self.props.index, 
+		BackgroundTransparency = 1
+		},
+		{
+			Cryo.Dictionary.join({
+				uiListLayout = e("UIListLayout", {
+					Padding = UDim.new(0, PluginEnum.PaddingHorizontal),
+					HorizontalAlignment = Enum.HorizontalAlignment.Left,
+					SortOrder = Enum.SortOrder.LayoutOrder,
+					FillDirection = Enum.FillDirection.Horizontal, 
+					VerticalAlignment =  Enum.VerticalAlignment.Center
+				}),
+			}, {
+				uiPadding = e("UIPadding", {
+					PaddingLeft = UDim.new(0, PluginEnum.PaddingHorizontal),
+					PaddingRight = UDim.new(0, PluginEnum.PaddingHorizontal),
+					PaddingTop = UDim.new(0, PluginEnum.PaddingVertical),
+					PaddingBottom = UDim.new(0, PluginEnum.PaddingVertical),
+					
+				}),
+		
+				imagePreview = e('ImageLabel', {
+					
+					Size = UDim2.new(0, PluginEnum.PreviewSize, 0, PluginEnum.PreviewSize),
+					AutomaticSize = Enum.AutomaticSize.XY,
+					BackgroundColor3 = PluginEnum.ColorBackground,
+					BorderSizePixel = 0,
+					Image='http://www.roblox.com/asset/?id=699259085',
+					LayoutOrder = 1,
+				}),
+				name = e('TextLabel', {
+					Size = UDim2.new(0, 0, 0, 0),
+					AutomaticSize = Enum.AutomaticSize.XY,
+					Text = state.piece.filePath,
+					Font = Enum.Font.BuilderSansMedium,
+					TextSize = PluginEnum.FontSizeTextPrimary,
+					TextColor3 = PluginEnum.ColorTextPrimary,
+					BackgroundColor3 = PluginEnum.ColorBackground,
+					BorderSizePixel = 0,
+					TextXAlignment = Enum.TextXAlignment.Left,
+					LayoutOrder = 2
+				}),
+				openButton = e("TextButton", {
+					Text = 'Open',
+					AutomaticSize = Enum.AutomaticSize.XY,
+					Size = UDim2.new(0, 0, 0, 0),
+					TextColor3 = PluginEnum.ColorButtonNavigationText,
+					BackgroundColor3 = PluginEnum.ColorButtonNavigationBackground,
+					BorderSizePixel = 0,
+					Font = Enum.Font.BuilderSansBold,
+					TextSize = PluginEnum.FontSizeNavigationButton,
+					LayoutOrder = 3,
+					[React.Event.MouseButton1Click] = function()
+						self.state.onClick()
+					end,
+				})
+			})
+		}
+		)
+end
 return PieceDetailsComponent
