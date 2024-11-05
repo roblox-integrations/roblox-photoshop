@@ -73,7 +73,6 @@ end
 
 function PieceComponent:render()
 	local state = self.state
-	print('about to render piece component')
 	return e('Frame', {				
 		Size = UDim2.new(0, 0, 0, 0),
 		AutomaticSize = Enum.AutomaticSize.XY,

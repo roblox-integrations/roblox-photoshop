@@ -11,11 +11,11 @@ local Cryo = require(Packages.Cryo)
 local e = React.createElement
 
 local Widget = React.Component:extend("Widget")
-local InstanceWirerComponent = require(script.Parent.InstanceWirerComponent)
+
 local PieceComponent = require(script.Parent.PieceComponent)
 local PieceDetailsComponent = require(script.Parent.PieceDetailsComponent)
-local TextureProperties = require(script.Parent.TextureProperties)
 local PluginEnum = require(script.Parent.Enum)
+
 type ImageType = "None" | "AssetId" | "BMP"
 
 local DEBUG_USE_EDITABLE_IMAGES = true
@@ -73,6 +73,8 @@ end
 
 function Widget:init()
 	print('Widget:init') 
+
+
 	local localPieces = self.state.pieces
 	self.onSelectionChanged = Selection.SelectionChanged:Connect(function()
 		print('selection changed')
@@ -83,11 +85,9 @@ function Widget:init()
 		-- 	self.setState(st)
 		-- else  
 		-- 	print('set new state')
-			self:setState({
-			selection = Selection:Get(),
-			pieces = self.state.pieces,
-			mode = self.state.mode
-			})
+			-- self:setState({
+			-- selection = Selection:Get()
+			-- })
 		-- end 
 	end)
 	self:setState({
@@ -107,7 +107,6 @@ function Widget:init()
 				print(k .. '->' .. v.filePath)
 			end
 			self:setState({
-				selection = Selection:Get(),
 				pieces = pieces
 			})
 			break
@@ -155,9 +154,7 @@ function Widget:render()
 				if lMode > MODE_PIECE_DETAILS then
 					lMode = MODE_LIST
 				end
-				local st = self.state
-				st.mode = lMode
-				self:setState(st)
+				self:setState({mode = lMode})
 			end
 		}),
 		content =  if self.state.mode == MODE_LIST then self:renderList() else self:renderPieceDetails(),
@@ -170,12 +167,12 @@ end
 
 function Widget:renderPieceDetails()
 
-	return e("ScrollingFrame", {
-		Size = UDim2.new(1, 0, 1, 0),
-		BackgroundTransparency = 1,
-		CanvasSize = UDim2.new(0, 0, 0, 0),
-		AutomaticCanvasSize = Enum.AutomaticSize.XY,
-		ScrollingDirection = Enum.ScrollingDirection.XY,
+	return e("Frame", {
+		Size = UDim2.new(0, 0, 0, 0),
+		AutomaticSize = Enum.AutomaticSize.XY,
+		LayoutOrder = self.props.index, 
+		BackgroundTransparency = 1, 
+
 	}, {
 		uiListLayout = e("UIListLayout", {
 			Padding = UDim.new(0, 4),
@@ -221,10 +218,9 @@ function Widget:renderList()
 				piece = piece,
 				index = k,
 				onClick = function()
-					self.state.mode = MODE_PIECE_DETAILS
-					local st = self.state
-					st.currentPiece = piece
-					self:setState(st)
+					self:setState({
+						mode = MODE_PIECE_DETAILS,
+						currentPiece = piece})
 				end
 			}
 		)
