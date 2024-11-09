@@ -15,7 +15,7 @@ local Widget = React.Component:extend("Widget")
 local PieceComponent = require(script.Parent.PieceComponent)
 local PieceDetailsComponent = require(script.Parent.PieceDetailsComponent)
 local PluginEnum = require(script.Parent.Enum)
-
+local fetcher = require(script.Parent.object_fetcher)
 type ImageType = "None" | "AssetId" | "BMP"
 
 local DEBUG_USE_EDITABLE_IMAGES = true
@@ -57,11 +57,8 @@ export type Piece = {
 function getPieces(): { Piece }
     print(`poll`)
     -- todo MI handle errors
-    local res = HttpService:GetAsync("http://localhost:3000/api/pieces")
-    local json = HttpService:JSONDecode(res)
-    -- print(`fetched json updates:  {#json}`)
-    local pieces = json :: { Piece }
-	return pieces
+		return fetcher.pieces
+		
     -- local tmp_pieces_map = {}
     -- for _, p in pieces do
     --     tmp_pieces_map[p.id] = p
@@ -95,22 +92,24 @@ function Widget:init()
 		pieces = {},
 		mode = MODE_LIST
 	})
-	print('Widget:done')
  	coroutine.wrap(function()
         print("WIDGET starting polling")
  		while true do	
 			local pieces = getPieces()
-			if #pieces > 0 then
-				print(`there were {#pieces} updates`)
+			if #pieces == 0 then 
+				wait(1) 
+				continue
 			end
-			for k, v in pieces do
-				print(k .. '->' .. v.filePath)
-			end
+			-- if #pieces > 0 then
+			-- 	print(`there were {#pieces} updates`)
+			-- end
+			-- for k, v in pieces do
+			-- 	print(k .. '->' .. v.filePath)
+			-- end
 			self:setState({
 				pieces = pieces
 			})
-			break
-
+			wait(1)
 		end 		
     end)()
 	
@@ -124,9 +123,6 @@ function Widget:render()
 	print('about to render')
 	local theme = settings().Studio.Theme
 
-    -- local elemen = renderPlayground()
-	-- if true then return elemen end
-
 	local element = e("ScrollingFrame", {
 		Size = UDim2.new(1, 0, 1, 0),
 		BackgroundTransparency = 1,
@@ -139,8 +135,9 @@ function Widget:render()
 			HorizontalAlignment = Enum.HorizontalAlignment.Left,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 		}),
+
 		modeSwitcher = e("TextButton", {
-			Text = 'Switch',
+			Text = 'Back',
 			AutomaticSize = Enum.AutomaticSize.XY,
 			Size = UDim2.new(0, 0, 0, 0),
 			TextColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogMainButtonText),
@@ -181,8 +178,8 @@ function Widget:renderPieceDetails()
 		}),
 
 		pieceDetails = e(PieceDetailsComponent, {
-				piece = self.state.currentPiece,
-				selection = self.state.selection
+				piece = self.state.currentPiece, 
+				fetcher = fetcher
 			}
 		),
 	})
@@ -212,11 +209,13 @@ function Widget:renderList()
 	local pieceComponents  = {}
 	local k = 1	
 	for _, piece in self.state.pieces do 
+		print('reset pieces: ', piece.id, piece.fileHash)
 		local newPieceComponent = e(
 			PieceComponent, 
 			{
 				piece = piece,
 				index = k,
+				fetcher = fetcher, 
 				onClick = function()
 					self:setState({
 						mode = MODE_PIECE_DETAILS,

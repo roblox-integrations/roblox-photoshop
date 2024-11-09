@@ -64,15 +64,22 @@ end
 
 function PieceComponent:init()
 	self:setState(self.props)
+	coroutine.wrap(function()
+		local content = self.state.fetcher:fetch(self.state.piece)
+		self:setState({editableImage = content})
+end)()
+
 end
 
 function PieceComponent:getDerivedStateFromProps(props)
 	return props
+
 end
 
 
 function PieceComponent:render()
 	local state = self.state
+	local content = self.state.fetcher:fetch(self.state.piece)
 	return e('Frame', {				
 		Size = UDim2.new(0, 0, 0, 0),
 		AutomaticSize = Enum.AutomaticSize.XY,
@@ -97,13 +104,13 @@ function PieceComponent:render()
 					
 				}),
 		
-				imagePreview = e('ImageLabel', {
+				imagePreview = content ~= nil and e('ImageLabel', {
 					
 					Size = UDim2.new(0, PluginEnum.PreviewSize, 0, PluginEnum.PreviewSize),
 					AutomaticSize = Enum.AutomaticSize.XY,
 					BackgroundColor3 = PluginEnum.ColorBackground,
 					BorderSizePixel = 0,
-					Image='http://www.roblox.com/asset/?id=699259085',
+					ImageContent = content,
 					LayoutOrder = 1,
 				}),
 				name = e('TextLabel', {

@@ -28,6 +28,7 @@ local textureProperties: {TexturePropertyData} = {
     Sky = {"SkyboxBk", "SkyboxDn", "SkyboxFt", "SkyboxLf", "SkyboxRt", "SkyboxUp", "SunTextureId", "MoonTextureId"},
     SurfaceAppearance = {"ColorMap", "MetalnessMap", "NormalMap", "RoughnessMap"},
     TerrainDetail = {"ColorMap", "MetalnessMap", "NormalMap", "RoughnessMap"},
+    Texture = {"Texture"},
     Trail = {"Texture"},
     UserInputService = {"MouseIcon"},
 }

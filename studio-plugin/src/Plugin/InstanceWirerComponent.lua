@@ -241,7 +241,11 @@ function InstanceWirerComponent:renderPropertyWires(i)
 					TextSize = PluginEnum.FontSizeNavigationButton,
 					LayoutOrder = 3,
 					[React.Event.MouseButton1Click] = function()
+						print('--- onclick')
+						print(self.state.instances[1])
+						print(self.state.properties[i])
 						
+						self.state.onClick(self.state.instances[1], self.state.properties[i])
 					end,
 				})
 			})
