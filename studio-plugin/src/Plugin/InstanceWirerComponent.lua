@@ -4,9 +4,6 @@ local Packages = PhotoshopIntegration.Packages
 
 local Cryo = require(Packages.Cryo)
 
-local HttpService = game:GetService("HttpService")
-local Selection = game:GetService("Selection")
-
 local React = require(Packages.React)
 
 local e = React.createElement
@@ -16,9 +13,6 @@ local TextureProperties = require(script.Parent.TextureProperties)
 local InstanceWirerComponent = React.Component:extend("InstanceWirerComponent")
 local PluginEnum = require(script.Parent.Enum)
 
-
-local SESSION_HEARTBEAT_INTERVAL = 3 -- Time between session heartbeat updates
-local SESSION_UPDATE_INTERVAL = 0.25 -- Time between checks for updates
 
 type StateData = {
 	source: Instance?,
@@ -107,34 +101,9 @@ function InstanceWirerComponent:willUnmount()
 	--self:onClickDisconnectButton()
 end
 
-function InstanceWirerComponent:setHeaderAndPropertiesHeaderLabel(target, instances) 
-	if #instances >= 1 then
-		target.header = instances[1].ClassName .. ' : ' .. instances[1].Name
-		local className = instances[1].ClassName
-		local properties = TextureProperties[className]
-		if properties == nil then properties = {} end
-		target.properties = properties		
-	end 
-end
 
 
 function InstanceWirerComponent:init()
-
-	local instances  = self.props.instances
-	self:setHeaderAndPropertiesHeaderLabel(self.props, instances)
-	self:setState(self.props)
-
-
-	self.onSelectionChanged = Selection.SelectionChanged:Connect(function()
-		local instances  = Selection:Get()
-		local stateUpdate = {}
-		self:setHeaderAndPropertiesHeaderLabel(stateUpdate, instances)
-		stateUpdate.instances = instances
-		self:setState(stateUpdate)
-	end)
-
-
-	
 end
 
 function InstanceWirerComponent.getDerivedStateFromProps(props)
@@ -142,19 +111,16 @@ function InstanceWirerComponent.getDerivedStateFromProps(props)
 end
 
 function InstanceWirerComponent:render()
-
-	if #self.state.properties == 0 then return nil end
-
+	
 	local properties =  {}
-	for i, _ in self.state.properties do
+	for i, _ in self.props.properties do
 		local p = self:renderPropertyWires(i)
 		properties[i] = p;
 	end
-
 	local header =  e("TextLabel", {
 		Size = UDim2.new(0, 0, 0, 0),
 		AutomaticSize = Enum.AutomaticSize.XY,
-		Text = self.state.header,
+		Text = self.props.header,
 		Font = Enum.Font.BuilderSansBold,
 		TextSize = PluginEnum.FontSizeHeader,
 		TextColor3 = PluginEnum.ColorTextPrimary,
@@ -216,7 +182,7 @@ function InstanceWirerComponent:renderPropertyWires(i)
 				name = e('TextLabel', {
 					Size = UDim2.new(0, 0, 0, 0),
 					AutomaticSize = Enum.AutomaticSize.XY,
-					Text = self.state.properties[i],
+					Text = self.props.properties[i],
 					Font = Enum.Font.BuilderSansMedium,
 					TextSize = PluginEnum.FontSizeTextPrimary,
 					TextColor3 = PluginEnum.ColorTextPrimary,
@@ -236,11 +202,7 @@ function InstanceWirerComponent:renderPropertyWires(i)
 					TextSize = PluginEnum.FontSizeNavigationButton,
 					LayoutOrder = 3,
 					[React.Event.MouseButton1Click] = function()
-						print('--- onclick')
-						print(self.state.instances[1])
-						print(self.state.properties[i])
-						
-						self.state.onClick(self.state.instances[1], self.state.properties[i])
+						self.props.onClick(self.props.instances, self.props.properties[i])
 					end,
 				})
 			})

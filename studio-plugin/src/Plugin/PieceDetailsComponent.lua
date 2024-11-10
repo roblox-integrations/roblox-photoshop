@@ -7,6 +7,7 @@ local e = React.createElement
 local Selection = game:GetService("Selection")
 
 local PieceDetailsComponent = React.Component:extend("PieceDetailsComponent")
+local TextureProperties = require(script.Parent.TextureProperties)
 
 local InstanceWirerComponent = require(script.Parent.InstanceWirerComponent)
 local PluginEnum = require(script.Parent.Enum)
@@ -45,12 +46,42 @@ function PieceDetailsComponent:willUnmount()
 end
 
 function PieceDetailsComponent:init()
+	self:updateWirersState()
+	self.onSelectionChanged = Selection.SelectionChanged:Connect(function()
+		self:updateWirersState()
+	end)
+end
+
+function PieceDetailsComponent:updateWirersState()
 	local selection = Selection:Get()
-	self:setState({selection = selection})
-		self.onSelectionChanged = Selection.SelectionChanged:Connect(function()
-			local selection = Selection:Get()
-			self:setState({selection = selection})
-		end)
+
+	local result = {}
+	for k, instance in selection do
+		local wirerModelByType = result[instance.ClassName]
+		if wirerModelByType == nil then 
+			local properties = TextureProperties[instance.ClassName]
+			if properties == nil then properties = {} end
+
+			wirerModelByType = {
+				instances = {},
+				properties = properties
+			} 
+			result[instance.ClassName] = wirerModelByType
+		end
+
+		table.insert(wirerModelByType.instances, instance)
+	end
+
+	for className, wirerModel in result do
+		
+		local count = #wirerModel.instances
+		if count > 1 
+			then wirerModel.header = count .. ' ' .. className  .. 's' 
+			else wirerModel.header = wirerModel.instances[1].Name
+		end
+	end
+	
+	self:setState({wirersModel = result})
 end
 
 function PieceDetailsComponent.getDerivedStateFromProps(props)
@@ -64,24 +95,31 @@ function PieceDetailsComponent:render()
 	local instanceWirers = {}
 
 	-- todo MI: add instance grouping by classname
-	for i, selectedInstance in state.selection do 
+	local i = 1
+	for className, wirerModel in state.wirersModel do 
 		print('redo wirers')
 		local newInstanceWirer = e(
 			InstanceWirerComponent, 
 			{
 				index = i,
-				instances = state.selection, 
-				onClick = function(instance, propertyName)
+				instances = wirerModel.instances, 
+				properties = wirerModel.properties,
+				header = wirerModel.header,
+
+				onClick = function(instances, propertyName)
 					local wire = {}
 					wire[self.props.piece.id] = propertyName
+
 					print('onClick')
-					print(instance)
 					print({wire})
-					t_u:set_instance_wires(instance, wire)
+					for i, instance in instances do
+						t_u:set_instance_wires(instance, wire)
+					end
 				end
 
 			})
 		instanceWirers['instanceWirer' .. i] = newInstanceWirer
+		i = i + 1
 	end
 	return e("Frame", {
 		BackgroundTransparency = 1,
