@@ -63,23 +63,17 @@ function PieceComponent:willUnmount()
 end
 
 function PieceComponent:init()
-	self:setState(self.props)
-	coroutine.wrap(function()
-		local content = self.state.fetcher:fetch(self.state.piece)
-		self:setState({editableImage = content})
-end)()
-
 end
 
 function PieceComponent:getDerivedStateFromProps(props)
 	return props
-
 end
 
 
 function PieceComponent:render()
-	local state = self.state
-	local content = self.state.fetcher:fetch(self.state.piece)
+	
+	local content = self.props.fetcher:fetch(self.props.piece)
+	
 	return e('Frame', {				
 		Size = UDim2.new(0, 0, 0, 0),
 		AutomaticSize = Enum.AutomaticSize.XY,
@@ -113,10 +107,11 @@ function PieceComponent:render()
 					ImageContent = content,
 					LayoutOrder = 1,
 				}),
+
 				name = e('TextLabel', {
 					Size = UDim2.new(0, 0, 0, 0),
 					AutomaticSize = Enum.AutomaticSize.XY,
-					Text = state.piece.filePath,
+					Text = self.props.piece.filePath,
 					Font = Enum.Font.BuilderSansMedium,
 					TextSize = PluginEnum.FontSizeTextPrimary,
 					TextColor3 = PluginEnum.ColorTextPrimary,
@@ -125,6 +120,19 @@ function PieceComponent:render()
 					TextXAlignment = Enum.TextXAlignment.Left,
 					LayoutOrder = 2
 				}),
+				hash = e('TextLabel', {
+					Size = UDim2.new(0, 0, 0, 0),
+					AutomaticSize = Enum.AutomaticSize.XY,
+					Text = self.props.piece.fileHash,
+					Font = Enum.Font.BuilderSansMedium,
+					TextSize = PluginEnum.FontSizeTextPrimary,
+					TextColor3 = PluginEnum.ColorTextPrimary,
+					BackgroundColor3 = PluginEnum.ColorBackground,
+					BorderSizePixel = 0,
+					TextXAlignment = Enum.TextXAlignment.Left,
+					LayoutOrder = 2
+				}),
+
 				openButton = e("TextButton", {
 					Text = 'Open',
 					AutomaticSize = Enum.AutomaticSize.XY,
@@ -136,7 +144,7 @@ function PieceComponent:render()
 					TextSize = PluginEnum.FontSizeNavigationButton,
 					LayoutOrder = 3,
 					[React.Event.MouseButton1Click] = function()
-						self.state.onClick()
+						self.props.onClick()
 					end,
 				})
 			})

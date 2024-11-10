@@ -30,14 +30,19 @@ export type Piece = {
 
 
 
+
 coroutine.wrap(function()
     while true do
         local res = HttpService:GetAsync(BASE_URL .. '/api/pieces')
         local json = HttpService:JSONDecode(res)
-        object_fetcher.pieces = json :: { Piece }
-
+        local pieces = json :: { Piece }
+        if pieces == nil then pieces = {} end
+        object_fetcher.pieces = pieces
+         
+        print('reset pieces', #object_fetcher.pieces)
         wait(1)
     end
+
 end)()
 
 
