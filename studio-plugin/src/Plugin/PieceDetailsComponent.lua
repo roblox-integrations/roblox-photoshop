@@ -1,9 +1,5 @@
 --!strict
 local Packages = script:FindFirstAncestor("PhotoshopIntegration").Packages
-local ContentProvider = game:GetService("ContentProvider")
-
-local HttpService = game:GetService("HttpService")
-
 local React = require(Packages.React)
 local Cryo = require(Packages.Cryo)
 
@@ -17,34 +13,12 @@ local PluginEnum = require(script.Parent.Enum)
 local t_u = require(script.Parent.tags_util)
 
 
-
-
-	-- print('buffer len: ' ..  buffer.len(decodedData))
-	-- if decodedData == nil then print('is nil') end
-	-- local i = 0
-	-- while i < buffer.len(decodedData) do
-	-- 	local number = buffer.readu8(decodedData, i)
-	-- 	print('number: ' .. number)
-	-- 	i = i +1
-	-- end
--- print('base64 decoded:' .. buffer.tostring(decodedData)) -- "Hello, world!"
-
--- /////wD/AP//AAD/AAD/gA==
-
-
-
-
-
-
-
-
-
 function PieceDetailsComponent:onClickSyncButton()
-	local state = self.state
-	local ok, response = pcall(function()
-		-- call sync long running method and return
-		return false
-	end)
+	-- local state = self.state
+	-- local ok, response = pcall(function()
+	-- 	-- call sync long running method and return
+	-- 	return false
+	-- end)
 	-- if not ok or not response.Success then
 	-- 	if typeof(response) == "table" then
 	-- 		warn("Request failed:", response.StatusCode, response.StatusMessage)
@@ -72,20 +46,11 @@ end
 
 function PieceDetailsComponent:init()
 	local selection = Selection:Get()
-	self:setState(self.props)
 	self:setState({selection = selection})
-	self.onSelectionChanged = Selection.SelectionChanged:Connect(function()
-		local selection = Selection:Get()
-		print('PDC selection changed:')
-		self:setState({selection = selection})
-	end)
-	print('Piece Details')
-
-	coroutine.wrap(function()
-			print('about to fetch image info ' .. self.state.piece.type)
-			local content = self.state.fetcher:fetch(self.state.piece)
-			self:setState({editableImage = content})
-    end)()
+		self.onSelectionChanged = Selection.SelectionChanged:Connect(function()
+			local selection = Selection:Get()
+			self:setState({selection = selection})
+		end)
 end
 
 function PieceDetailsComponent.getDerivedStateFromProps(props)
@@ -108,18 +73,16 @@ function PieceDetailsComponent:render()
 				instances = state.selection, 
 				onClick = function(instance, propertyName)
 					local wire = {}
-					wire[self.state.piece.id] = propertyName
+					wire[self.props.piece.id] = propertyName
 					print('onClick')
 					print(instance)
 					print({wire})
-					t_u:set_instance_wires(instance, {wire})
+					t_u:set_instance_wires(instance, wire)
 				end
 
 			})
 		instanceWirers['instanceWirer' .. i] = newInstanceWirer
 	end
-	print('PDC wirers count: ' .. #instanceWirers)
-
 	return e("Frame", {
 		BackgroundTransparency = 1,
 		Size = UDim2.new(0, 0, 0, 0),
@@ -139,6 +102,8 @@ end
 
 function PieceDetailsComponent:renderPreviewAndName(order: number)
 	print('render piece details component')
+
+	local content = self.props.fetcher:fetch(self.props.piece)
 	return {
 		e("Frame", {
 			BackgroundTransparency = 1,
@@ -153,12 +118,12 @@ function PieceDetailsComponent:renderPreviewAndName(order: number)
 			FillDirection = Enum.FillDirection.Horizontal,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 		}),
-		texturePreviewTop = self.state.editableImage ~= nil and e("ImageLabel", {
+		texturePreviewTop = content ~= nil and e("ImageLabel", {
 			Size = UDim2.new(0, PluginEnum.PreviewSize, 0, PluginEnum.PreviewSize),
 			AutomaticSize = Enum.AutomaticSize.XY,
 			BackgroundColor3 = PluginEnum.ColorBackground,
 			BorderSizePixel = 0,
-			ImageContent =  self.state.editableImage,
+			ImageContent = content,
 		}),
 		-- texturePreviewTop = self.state.editableImage ~= nil and e("ImageLabel", {
 		-- 	Size = UDim2.new(0, PluginEnum.PreviewSize, 0, PluginEnum.PreviewSize),
@@ -171,7 +136,7 @@ function PieceDetailsComponent:renderPreviewAndName(order: number)
 		nameTop = e('TextLabel', {
 			Size = UDim2.new(0, 0, 0, 0),
 			AutomaticSize = Enum.AutomaticSize.XY,
-			Text = self.state.piece.filePath,
+			Text = self.props.piece.filePath,
 			Font = Enum.Font.BuilderSansBold,
 			TextSize = PluginEnum.FontSizeTextPrimary,
 			TextColor3 = PluginEnum.ColorTextPrimary,

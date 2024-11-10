@@ -120,18 +120,18 @@ function PieceComponent:render()
 					TextXAlignment = Enum.TextXAlignment.Left,
 					LayoutOrder = 2
 				}),
-				hash = e('TextLabel', {
-					Size = UDim2.new(0, 0, 0, 0),
-					AutomaticSize = Enum.AutomaticSize.XY,
-					Text = self.props.piece.fileHash,
-					Font = Enum.Font.BuilderSansMedium,
-					TextSize = PluginEnum.FontSizeTextPrimary,
-					TextColor3 = PluginEnum.ColorTextPrimary,
-					BackgroundColor3 = PluginEnum.ColorBackground,
-					BorderSizePixel = 0,
-					TextXAlignment = Enum.TextXAlignment.Left,
-					LayoutOrder = 2
-				}),
+				-- hash = e('TextLabel', {
+				-- 	Size = UDim2.new(0, 0, 0, 0),
+				-- 	AutomaticSize = Enum.AutomaticSize.XY,
+				-- 	Text = self.props.piece.fileHash,
+				-- 	Font = Enum.Font.BuilderSansMedium,
+				-- 	TextSize = PluginEnum.FontSizeTextPrimary,
+				-- 	TextColor3 = PluginEnum.ColorTextPrimary,
+				-- 	BackgroundColor3 = PluginEnum.ColorBackground,
+				-- 	BorderSizePixel = 0,
+				-- 	TextXAlignment = Enum.TextXAlignment.Left,
+				-- 	LayoutOrder = 2
+				-- }),
 
 				openButton = e("TextButton", {
 					Text = 'Open',

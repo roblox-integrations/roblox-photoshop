@@ -109,7 +109,6 @@ end
 
 function InstanceWirerComponent:setHeaderAndPropertiesHeaderLabel(target, instances) 
 	if #instances >= 1 then
-		print('Build header')
 		target.header = instances[1].ClassName .. ' : ' .. instances[1].Name
 		local className = instances[1].ClassName
 		local properties = TextureProperties[className]
@@ -127,7 +126,6 @@ function InstanceWirerComponent:init()
 
 
 	self.onSelectionChanged = Selection.SelectionChanged:Connect(function()
-		print('InstanceWirer: selectionChanged')
 		local instances  = Selection:Get()
 		local stateUpdate = {}
 		self:setHeaderAndPropertiesHeaderLabel(stateUpdate, instances)
@@ -144,9 +142,6 @@ function InstanceWirerComponent.getDerivedStateFromProps(props)
 end
 
 function InstanceWirerComponent:render()
-
-
-	print('InstanceWirer: ' .. self.state.header)
 
 	if #self.state.properties == 0 then return nil end
 

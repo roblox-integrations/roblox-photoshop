@@ -55,24 +55,24 @@ export type Piece = {
 
 
 function getPieces(): { Piece }
-    print(`poll`)
     -- todo MI handle errors
-		return fetcher.pieces
-		
-    -- local tmp_pieces_map = {}
-    -- for _, p in pieces do
-    --     tmp_pieces_map[p.id] = p
-    -- end
-
-	-- return tmp_pieces_map
+	return fetcher.pieces
 end
 
 
 function Widget:init()
 	print('Widget:init') 
 
+	-- local elements  = {}
+	-- local i = 1
+	-- while i < 5 do
+	-- 	elements[i] = 'elememnt ' .. i
+	-- 	i = i + 1
+	-- end
 
-	local localPieces = self.state.pieces
+	-- self:setState({elements = elements})
+
+
 	self.onSelectionChanged = Selection.SelectionChanged:Connect(function()
 		print('selection changed')
 		-- if self.state ~= nil then  
@@ -94,23 +94,36 @@ function Widget:init()
 	})
  	coroutine.wrap(function()
         print("WIDGET starting polling")
- 		while true do	
-			local pieces = getPieces()
-			if #pieces == 0 then 
-				wait(1) 
-				continue
-			end
-			-- if #pieces > 0 then
-			-- 	print(`there were {#pieces} updates`)
-			-- end
-			-- for k, v in pieces do
-			-- 	print(k .. '->' .. v.filePath)
-			-- end
-			self:setState({
-				pieces = pieces
-			})
-			wait(1)
-		end 		
+ 		-- while true do	
+		-- 	local pieces = getPieces()
+		-- 	if #pieces == 0 then 
+		-- 		wait(1) 
+		-- 		continue
+		-- 	end
+		-- 	self:setState({
+		-- 		pieces = pieces
+		-- 	})
+		-- 	wait(1)
+
+		-- 	-- local elems = self.state.elements
+		-- 	-- if math.fmod(#elems, 2) == 0 then 
+		-- 	-- 	local newIndex = #elems + 1
+		-- 	-- 	elems[newIndex] = 'element ' .. newIndex 
+		-- 	-- else
+		-- 	-- 	table.remove(elems, #elems)
+		-- 	-- end
+			
+		-- 	-- local newTable = {}
+		-- 	-- for k, v in self.state.elements do
+		-- 	-- 	newTable[k] = v .. '123'
+		-- 	-- end
+
+		-- 	-- self:setState({elements = newTable})
+
+		-- 	-- elems[1] = elems[1] .. '1'
+
+
+		-- end 		
     end)()
 	
 end
@@ -120,8 +133,11 @@ end
 function Widget:render()
 	
 
+
 	print('about to render')
 	local theme = settings().Studio.Theme
+
+	--if true then return self:renderPlayground() end
 
 	local element = e("ScrollingFrame", {
 		Size = UDim2.new(1, 0, 1, 0),
@@ -136,8 +152,8 @@ function Widget:render()
 			SortOrder = Enum.SortOrder.LayoutOrder,
 		}),
 
-		modeSwitcher = e("TextButton", {
-			Text = 'Back',
+		fetchButton = e("TextButton", {
+			Text = 'Fetch',
 			AutomaticSize = Enum.AutomaticSize.XY,
 			Size = UDim2.new(0, 0, 0, 0),
 			TextColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogMainButtonText),
@@ -145,7 +161,29 @@ function Widget:render()
 			BorderSizePixel = 0,
 			Font = Enum.Font.BuilderSansBold,
 			TextSize = 40,
-			LayoutOrder = 0,
+			LayoutOrder = 1,
+			[React.Event.MouseButton1Click] = function()
+
+				local pieces = getPieces()
+				if #pieces == 0 then 
+					return					
+				end
+				self:setState({
+					pieces = pieces
+				})
+			end
+		}),
+
+		back = self.state.mode == MODE_PIECE_DETAILS and e("TextButton", {
+			Text = '[X]',
+			AutomaticSize = Enum.AutomaticSize.XY,
+			Size = UDim2.new(0, 0, 0, 0),
+			TextColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogMainButtonText),
+			BackgroundColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogMainButton),
+			BorderSizePixel = 0,
+			Font = Enum.Font.BuilderSansBold,
+			TextSize = 40,
+			LayoutOrder = 2,
 			[React.Event.MouseButton1Click] = function()
 				local lMode = self.state.mode+1
 				if lMode > MODE_PIECE_DETAILS then
@@ -167,8 +205,8 @@ function Widget:renderPieceDetails()
 	return e("Frame", {
 		Size = UDim2.new(0, 0, 0, 0),
 		AutomaticSize = Enum.AutomaticSize.XY,
-		LayoutOrder = self.props.index, 
-		BackgroundTransparency = 1, 
+		LayoutOrder = 3, 
+		BackgroundTransparency = 1
 
 	}, {
 		uiListLayout = e("UIListLayout", {
@@ -231,6 +269,7 @@ function Widget:renderList()
 	return e("Frame", {
 		Size = UDim2.new(0, 0, 0, 0),
 		BackgroundTransparency = 1,
+		LayoutOrder = 3
 	}, {
 		uiListLayout = e("UIListLayout", {
 			Padding = UDim.new(0, 4),
@@ -275,11 +314,11 @@ function Widget:renderList()
 	})
 end
 
-function renderPlayground()
+function Widget:renderPlayground()
 
 	local i = 1
 	local elements = {}
-	while i < 100 do
+	for k, element in self.state.elements do
 		
 		local sourceText = e(
 			'Frame', {				
@@ -317,7 +356,7 @@ function renderPlayground()
 					name = e('TextLabel', {
 						Size = UDim2.new(0, 0, 0, 0),
 						AutomaticSize = Enum.AutomaticSize.XY,
-						Text = "Item right " .. -i,
+						Text = element,
 						Font = Enum.Font.BuilderSansMedium,
 						TextSize = PluginEnum.FontSizeTextPrimary,
 						TextColor3 = PluginEnum.ColorTextPrimary,
@@ -337,7 +376,6 @@ function renderPlayground()
 						TextSize = PluginEnum.FontSizeNavigationButton,
 						LayoutOrder = 3,
 						[React.Event.MouseButton1Click] = function()
-							self.state.onClick()
 						end,
 					})
 				})
