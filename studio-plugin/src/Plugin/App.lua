@@ -21,7 +21,7 @@ function App:init()
 end
 
 function App:render()
-	local pluginName = "Photoshop Integration"
+	local pluginName = "Rohub Asset Sync"
 
 	return e(StudioPluginContext.Provider, {
 		value = self.props.plugin,
@@ -54,10 +54,10 @@ function App:render()
 		}),
 		sharedToolbarButton = e(StudioSharedToolbar, {
 			combinerName = "Roblox-Integration-Toolbar",
-			toolbarName = "Integrations",
-			buttonName = "Photoshop",
-			buttonIcon = "rbxassetid://16371612297",
-			buttonTooltip = "Toggle the Photoshop Integration widget",
+			toolbarName = "Rohub",
+			buttonName = "Assets Sync",
+			buttonIcon = "rbxassetid://82119292263067",
+			buttonTooltip = "Toggle the Asset Sync widget",
 			buttonEnabled = true,
 			buttonActive = self.state.guiEnabled,
 			onClick = function()

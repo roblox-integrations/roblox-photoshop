@@ -275,6 +275,7 @@ function Widget:renderList()
 			Padding = UDim.new(0, 4),
 			HorizontalAlignment = Enum.HorizontalAlignment.Left,
 			SortOrder = Enum.SortOrder.LayoutOrder,
+			
 		}),
 
 
