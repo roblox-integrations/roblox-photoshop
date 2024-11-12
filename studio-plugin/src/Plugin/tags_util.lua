@@ -12,7 +12,43 @@ local TAG_PREFIX = 'piece:'
 
 local tags_util = {}
 
-  
+function tags_util:get_instance_wires(instance: Instance)
+    if not instance:HasTag(TAG_WIRED) then return {} end
+    for _, tag in instance:GetTags() do
+        local replaced, count = string.gsub(tag, TAG_PREFIX, "")
+        if count < 1  then
+            print('skipping tag ' .. tag)
+            continue
+        end
+        -- todo MI handle json parsing errors
+        local property_wires = HttpService:JSONDecode(replaced) :: {}
+        return property_wires
+    end
+
+end
+
+
+function tags_util:wire_instance(instance: Instance, piece_id, property)
+    local wires = self:get_instance_wires(instance)
+
+    -- remove existing wire for property
+    for w_piece_id, w_property in wires do
+        if w_property == property then 
+            wires[w_piece_id] = nil
+            break
+        end
+    end
+    wires[piece_id] = property
+    self:set_instance_wires(instance, wires)
+end
+
+function tags_util:unwire_instance(instance: Instance, piece_id)
+    
+    local wires = self:get_instance_wires(instance)
+    wires[piece_id] = nil  
+    self:set_instance_wires(instance, wires)
+end
+
 
 
 function tags_util:set_instance_wires(instance: Instance, wires: {})
@@ -44,26 +80,22 @@ end
 
 function tags_util:ts_get_all_wired_in_dm(): {[Instance]: {string: string} } 
     local instance_wires = {}
-    local counter = 0 
     for _, inst in CollectionService:GetTagged(TAG_WIRED) do
-        for _, tag in inst:GetTags() do
-            local replaced, count = string.gsub(tag, TAG_PREFIX, "")
-            if count < 1  then
-                print('skipping tag ' .. tag)
-                continue
-            end
-            -- todo MI handle json parsing errors
-            local property_wires = HttpService:JSONDecode(replaced) :: {}
-            instance_wires[inst] = property_wires   
-
-            counter = counter + 1
-        end
+        instance_wires[inst] = tags_util:get_instance_wires(inst)
     end
-
-    print('found ' .. counter .. ' wired instances')
     return instance_wires
-
-    
 end
+
+
+
+
+function tags_util:table_size(tab) 
+    local count = 0
+    for _, _ in tab do
+        count = count+1
+    end
+    return count
+end
+
 
 return tags_util

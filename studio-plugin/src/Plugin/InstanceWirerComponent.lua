@@ -8,8 +8,6 @@ local React = require(Packages.React)
 
 local e = React.createElement
 
-local TextureProperties = require(script.Parent.TextureProperties)
-
 local InstanceWirerComponent = React.Component:extend("InstanceWirerComponent")
 local PluginEnum = require(script.Parent.Enum)
 
@@ -147,6 +145,9 @@ function InstanceWirerComponent:render()
 end
 
 function InstanceWirerComponent:renderPropertyWires(i)
+	local property_wiring_state = self.props.combinedPropertyState[self.props.properties[i]]
+	local show_unwire = property_wiring_state ~= PluginEnum.WIRED_NOT
+
 	return e('Frame', {				
 		Size = UDim2.new(0, 0, 0, 0),
 		AutomaticSize = Enum.AutomaticSize.XY,
@@ -191,7 +192,7 @@ function InstanceWirerComponent:renderPropertyWires(i)
 					TextXAlignment = Enum.TextXAlignment.Left,
 					LayoutOrder = 2
 				}),
-				openButton = e("TextButton", {
+				wireButton = e("TextButton", {
 					Text = 'Wire',
 					AutomaticSize = Enum.AutomaticSize.XY,
 					Size = UDim2.new(0, 0, 0, 0),
@@ -204,7 +205,22 @@ function InstanceWirerComponent:renderPropertyWires(i)
 					[React.Event.MouseButton1Click] = function()
 						self.props.onClick(self.props.instances, self.props.properties[i])
 					end,
+				}), 
+				unwireButton = show_unwire and e("TextButton", {
+					Text = 'Unwire',
+					AutomaticSize = Enum.AutomaticSize.XY,
+					Size = UDim2.new(0, 0, 0, 0),
+					TextColor3 = PluginEnum.ColorButtonSecondaryActionText,
+					BackgroundColor3 = PluginEnum.ColorButtonSecondaryActionBackground,
+					BorderSizePixel = 0,
+					Font = Enum.Font.BuilderSansBold,
+					TextSize = PluginEnum.FontSizeNavigationButton,
+					LayoutOrder = 3,
+					[React.Event.MouseButton1Click] = function()
+						self.props.onUwireClick(self.props.instances)
+					end,
 				})
+
 			})
 		}
 		)

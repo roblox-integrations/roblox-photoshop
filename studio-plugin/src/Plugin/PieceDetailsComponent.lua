@@ -32,6 +32,7 @@ end
 
 
 function PieceDetailsComponent:didMount()
+	print('PieceDetailsComponent:didMount')
 	 -- add listener for tags changes
 		-- if self.state.source and self.state.propertyName then
 		-- 	self.state.source:GetPropertyChangedSignal(self.state.propertyName):Connect(function()
@@ -42,6 +43,8 @@ function PieceDetailsComponent:didMount()
 end
 
 function PieceDetailsComponent:willUnmount()
+	 print('PieceDetailsComponent:willUnmount')
+	 
 	--self:onClickDisconnectButton()
 end
 
@@ -52,10 +55,17 @@ function PieceDetailsComponent:init()
 	end)
 end
 
+
+-- individual wirer state: 
+-- 1. not wired
+-- 2. wiered to different things
+-- 3. wired to the same thing
+
 function PieceDetailsComponent:updateWirersState()
 	local selection = Selection:Get()
 
-	local result = {}
+	local result = {
+	}
 	for k, instance in selection do
 		local wirerModelByType = result[instance.ClassName]
 		if wirerModelByType == nil then 
@@ -73,12 +83,44 @@ function PieceDetailsComponent:updateWirersState()
 	end
 
 	for className, wirerModel in result do
-		
 		local count = #wirerModel.instances
 		if count > 1 
 			then wirerModel.header = count .. ' ' .. className  .. 's' 
 			else wirerModel.header = wirerModel.instances[1].Name
 		end
+
+
+		-- per-property wiring state -- wired to current, not wired, etc
+		local properties_wire_state = {}
+		for j, instance in wirerModel.instances do
+			local instanceWires = t_u:get_instance_wires(instance)
+			for piece_id, property in instanceWires do
+				local prop_wire_st = properties_wire_state[property]
+				if prop_wire_st == nil then prop_wire_st = {} end
+				prop_wire_st[piece_id] = true
+				properties_wire_state[property] = prop_wire_st
+			end
+		end
+
+
+		for _, property in wirerModel.properties do -- add empty for properties that are not wired
+			if properties_wire_state[property] == nil then properties_wire_state[property]  = {} end
+		end
+
+		print('!!propertiesWireState', properties_wire_state)
+
+		wirerModel.combinedPropertyState = {}
+		for property, wire_state in properties_wire_state do
+			print('property->wireState', property, wire_state, #wire_state)
+			local count = t_u:table_size(wire_state)
+			
+			if count == 0 then wirerModel.combinedPropertyState[property] = PluginEnum.WIRED_NOT continue  end
+			if count > 1 then wirerModel.combinedPropertyState[property] = PluginEnum.WIRED_MIXED continue end
+			
+			if wire_state[1] == self.props.piece.id then wirerModel.combinedPropertyState[property] = PluginEnum.WIRED_ALL_CURRENT
+			else wirerModel.combinedPropertyState[property] = PluginEnum.WIRED_ALL_OTHER end
+		end	
+		print('!!wireState', wirerModel.combinedPropertyState)
 	end
 	
 	self:setState({wirersModel = result})
@@ -105,17 +147,20 @@ function PieceDetailsComponent:render()
 				instances = wirerModel.instances, 
 				properties = wirerModel.properties,
 				header = wirerModel.header,
+				combinedPropertyState = wirerModel.combinedPropertyState,
 
 				onClick = function(instances, propertyName)
-					local wire = {}
-					wire[self.props.piece.id] = propertyName
-
-					print('onClick')
-					print({wire})
 					for i, instance in instances do
-						t_u:set_instance_wires(instance, wire)
+						t_u:wire_instance(instance, self.props.piece.id, propertyName)
 					end
+				end, 
+				onUwireClick = function(instances) 
+					for i, instance in instances do
+						t_u:unwire_instance(instance, self.props.piece.id)
+					end
+					
 				end
+
 
 			})
 		instanceWirers['instanceWirer' .. i] = newInstanceWirer

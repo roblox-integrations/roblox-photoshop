@@ -6,7 +6,11 @@ local Packages = script:FindFirstAncestor("PhotoshopIntegration").Packages
 local t_u = require(script.Parent.tags_util)
 
 local base64 = require(Packages.base64)
+
+local POLL_RATE = 2 -- seconds
+
 local BASE_URL = 'http://localhost:3000'
+
 local object_fetcher = {
     cache = {},
     pieces = {}
@@ -46,8 +50,9 @@ local pieces_sync_state : PiecesSyncState = {
 
 
 coroutine.wrap(function()
+
     while true do
-        print('Fetch!')
+        print('Fetch!111')
         local res = HttpService:GetAsync(BASE_URL .. '/api/pieces')
         local json = HttpService:JSONDecode(res)
         local pieces = json :: { Piece }
@@ -82,8 +87,10 @@ coroutine.wrap(function()
             --     -- print('piece: ' .. p.filePath .. ', time diff: ' .. (pieces_sync_state.updatedAt - p.updatedAt))
             -- end
         end
+        print('wait for', 100)
         process_pieces(tmp_pieces_map)
-        task.wait(10)
+        
+        task.wait(100)
     end
 
 end)()

@@ -23,7 +23,18 @@ local enum = {
 	ColorButtonNavigationText = theme:GetColor(Enum.StudioStyleGuideColor.DialogButtonText),
 	ColorButtonNavigationBackground = theme:GetColor(Enum.StudioStyleGuideColor.Light),
 
+	ColorButtonSecondaryActionText = theme:GetColor(Enum.StudioStyleGuideColor.MainBackground),
+	ColorButtonSecondaryActionBackground = Color3.fromRGB(200, 200, 0),
 
+	
 	PreviewSize = 65,
+
+
+
+	WIRED_NOT = 0,
+	WIRED_MIXED = 1,
+	WIRED_ALL_CURRENT = 2,
+	WIRED_ALL_OTHER = 3
+
 }
 return enum

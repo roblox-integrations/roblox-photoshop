@@ -87,7 +87,8 @@ function PieceComponent:render()
 					HorizontalAlignment = Enum.HorizontalAlignment.Left,
 					SortOrder = Enum.SortOrder.LayoutOrder,
 					FillDirection = Enum.FillDirection.Horizontal, 
-					VerticalAlignment =  Enum.VerticalAlignment.Center
+					VerticalAlignment =  Enum.VerticalAlignment.Center, 
+					HorizontalFlex = Enum.UIFlexAlignment.Fill
 				}),
 			}, {
 				uiPadding = e("UIPadding", {
