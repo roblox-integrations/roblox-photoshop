@@ -17,7 +17,7 @@ function tags_util:get_instance_wires(instance: Instance)
     for _, tag in instance:GetTags() do
         local replaced, count = string.gsub(tag, TAG_PREFIX, "")
         if count < 1  then
-            print('skipping tag ' .. tag)
+            --print('skipping tag ' .. tag)
             continue
         end
         -- todo MI handle json parsing errors
@@ -28,6 +28,16 @@ function tags_util:get_instance_wires(instance: Instance)
 end
 
 
+function tags_util:shouldRebuildWirersStat(selectedInstances, instance) 
+    local updateWirersState = false
+    for _, selectedInstance in selectedInstances do
+       if selectedInstance == instance then 
+          updateWirersState = true 
+          break
+      end
+    end
+    return updateWirersState
+end
 function tags_util:wire_instance(instance: Instance, piece_id, property)
     local wires = self:get_instance_wires(instance)
 
@@ -45,6 +55,7 @@ end
 function tags_util:unwire_instance(instance: Instance, piece_id)
     
     local wires = self:get_instance_wires(instance)
+    print('set_instance_wires before!', piece_id, wires)
     wires[piece_id] = nil  
     self:set_instance_wires(instance, wires)
 end
@@ -53,6 +64,8 @@ end
 
 function tags_util:set_instance_wires(instance: Instance, wires: {})
     -- cleanup tags
+
+    print('set_instance_wires!', wires)
     instance:RemoveTag(TAG_WIRED)
     for _, tag in instance:GetTags() do
         local _, count = string.gsub(tag, TAG_PREFIX, "")

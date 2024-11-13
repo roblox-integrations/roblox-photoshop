@@ -73,20 +73,7 @@ function Widget:init()
 	-- self:setState({elements = elements})
 
 
-	self.onSelectionChanged = Selection.SelectionChanged:Connect(function()
-		print('selection changed')
-		-- if self.state ~= nil then  
-		-- 	print('update current state')
-		-- 	local st = self.state 
-		-- 	st.selection = Selection:Get(),
-		-- 	self.setState(st)
-		-- else  
-		-- 	print('set new state')
-			-- self:setState({
-			-- selection = Selection:Get()
-			-- })
-		-- end 
-	end)
+
 	self:setState({
 		selection = Selection:Get(),
 		pieces = {},
@@ -139,6 +126,7 @@ function Widget:render()
 
 	--if true then return self:renderPlayground() end
 
+
 	local element = e("ScrollingFrame", {
 		Size = UDim2.new(1, 0, 1, 0),
 		BackgroundTransparency = 1,
@@ -150,10 +138,11 @@ function Widget:render()
 			Padding = UDim.new(0, 4),
 			HorizontalAlignment = Enum.HorizontalAlignment.Left,
 			SortOrder = Enum.SortOrder.LayoutOrder,
+			HorizontalFlex = Enum.UIFlexAlignment.Fill
 		}),
 
 		fetchButton = e("TextButton", {
-			Text = 'Fetch',
+			Text = 'Refresh UI',
 			AutomaticSize = Enum.AutomaticSize.XY,
 			Size = UDim2.new(0, 0, 0, 0),
 			TextColor3 = theme:GetColor(Enum.StudioStyleGuideColor.DialogMainButtonText),
@@ -165,11 +154,17 @@ function Widget:render()
 			[React.Event.MouseButton1Click] = function()
 
 				local pieces = getPieces()
-				if #pieces == 0 then 
-					return					
+				local currentPiece = nil
+				if self.state.currentPiece ~= nil 
+				    then 
+						currentPiece = fetcher.pieces_map[self.state.currentPiece.id]
+					else
 				end
+				
 				self:setState({
-					pieces = pieces
+					pieces = pieces, 
+					currentPiece = currentPiece
+
 				})
 			end
 		}),
@@ -210,7 +205,7 @@ function Widget:renderPieceDetails()
 
 	}, {
 		uiListLayout = e("UIListLayout", {
-			Padding = UDim.new(0, 4),
+			Padding = UDim.new(2, 2),
 			HorizontalAlignment = Enum.HorizontalAlignment.Left,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 		}),
@@ -279,6 +274,7 @@ function Widget:renderList()
 		}),
 
 
+
 		instanceWirersList = e(
 				"Frame",
 				{
@@ -343,7 +339,7 @@ function Widget:renderPlayground()
 						PaddingTop = UDim.new(0, PluginEnum.PaddingVertical),
 						PaddingBottom = UDim.new(0, PluginEnum.PaddingVertical),
 						
-					}),
+				}),
 			
 					imagePreview = e('ImageLabel', {
 						

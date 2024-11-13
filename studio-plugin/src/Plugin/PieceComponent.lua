@@ -49,6 +49,8 @@ function PieceComponent:onClickSyncButton()
 end
 
 function PieceComponent:didMount()
+	local content = self.props.fetcher:fetch(self.props.piece)
+	self:setState({content = content})
 	 -- add listener for tags changes
 		-- if self.state.source and self.state.propertyName then
 		-- 	self.state.source:GetPropertyChangedSignal(self.state.propertyName):Connect(function()
@@ -72,8 +74,7 @@ end
 
 function PieceComponent:render()
 	
-	local content = self.props.fetcher:fetch(self.props.piece)
-	
+	local content = self.state.content	
 	return e('Frame', {				
 		Size = UDim2.new(0, 0, 0, 0),
 		AutomaticSize = Enum.AutomaticSize.XY,

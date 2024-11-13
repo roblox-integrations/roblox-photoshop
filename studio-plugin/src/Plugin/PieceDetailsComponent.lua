@@ -5,6 +5,7 @@ local Cryo = require(Packages.Cryo)
 
 local e = React.createElement
 local Selection = game:GetService("Selection")
+local CollectionService = game:GetService("CollectionService")
 
 local PieceDetailsComponent = React.Component:extend("PieceDetailsComponent")
 local TextureProperties = require(script.Parent.TextureProperties)
@@ -31,15 +32,20 @@ function PieceDetailsComponent:onClickSyncButton()
 end
 
 
+
 function PieceDetailsComponent:didMount()
-	print('PieceDetailsComponent:didMount')
-	 -- add listener for tags changes
-		-- if self.state.source and self.state.propertyName then
-		-- 	self.state.source:GetPropertyChangedSignal(self.state.propertyName):Connect(function()
-		-- 		self.state.shownImage = self.state.source[self.state.propertyName]
-		-- 		self.props.onSessionDataChanged(self)
-		-- 	end)
-		-- end
+	print('PieceDetailsComponent:didMount', self.state.wirersModel)
+
+    CollectionService:GetInstanceAddedSignal('wired'):Connect(function(instance)
+		local updateWirersState = t_u:shouldRebuildWirersStat(Selection:Get(), instance)
+		if updateWirersState then self:updateWirersState() end
+    end)
+
+    CollectionService:GetInstanceRemovedSignal('wired'):Connect(function(instance)
+		local updateWirersState = t_u:shouldRebuildWirersStat(Selection:Get(), instance)
+		if updateWirersState then self:updateWirersState() end
+	end)
+
 end
 
 function PieceDetailsComponent:willUnmount()
@@ -55,11 +61,6 @@ function PieceDetailsComponent:init()
 	end)
 end
 
-
--- individual wirer state: 
--- 1. not wired
--- 2. wiered to different things
--- 3. wired to the same thing
 
 function PieceDetailsComponent:updateWirersState()
 	local selection = Selection:Get()
@@ -107,18 +108,19 @@ function PieceDetailsComponent:updateWirersState()
 			if properties_wire_state[property] == nil then properties_wire_state[property]  = {} end
 		end
 
-		print('!!propertiesWireState', properties_wire_state)
-
 		wirerModel.combinedPropertyState = {}
 		for property, wire_state in properties_wire_state do
-			print('property->wireState', property, wire_state, #wire_state)
 			local count = t_u:table_size(wire_state)
+			print('property->wireState', property, wire_state, count)
 			
 			if count == 0 then wirerModel.combinedPropertyState[property] = PluginEnum.WIRED_NOT continue  end
 			if count > 1 then wirerModel.combinedPropertyState[property] = PluginEnum.WIRED_MIXED continue end
 			
-			if wire_state[1] == self.props.piece.id then wirerModel.combinedPropertyState[property] = PluginEnum.WIRED_ALL_CURRENT
-			else wirerModel.combinedPropertyState[property] = PluginEnum.WIRED_ALL_OTHER end
+			if wire_state[self.props.piece.id] then wirerModel.combinedPropertyState[property] = PluginEnum.WIRED_ALL_CURRENT
+			else 
+				wirerModel.combinedPropertyState[property] = PluginEnum.WIRED_ALL_OTHER 
+				wirerModel.combinedPropertyState['piece_id_' .. property] = Cryo.Dictionary.keys(wire_state)[1]
+			end
 		end	
 		print('!!wireState', wirerModel.combinedPropertyState)
 	end
@@ -136,7 +138,6 @@ function PieceDetailsComponent:render()
 	local state = self.state
 	local instanceWirers = {}
 
-	-- todo MI: add instance grouping by classname
 	local i = 1
 	for className, wirerModel in state.wirersModel do 
 		print('redo wirers')
@@ -147,15 +148,21 @@ function PieceDetailsComponent:render()
 				instances = wirerModel.instances, 
 				properties = wirerModel.properties,
 				header = wirerModel.header,
+				fetcher = self.props.fetcher,
+				piece = self.props.piece,
 				combinedPropertyState = wirerModel.combinedPropertyState,
 
 				onClick = function(instances, propertyName)
-					for i, instance in instances do
+					for _, instance in instances do
 						t_u:wire_instance(instance, self.props.piece.id, propertyName)
+						self.props.fetcher:update_instance_if_needed(instance)
 					end
 				end, 
 				onUwireClick = function(instances) 
-					for i, instance in instances do
+					for _, instance in instances do
+						print('unwire all')
+
+						-- TODO MI: handle properties wired to other pieces!!!
 						t_u:unwire_instance(instance, self.props.piece.id)
 					end
 					

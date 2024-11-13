@@ -1,3 +1,4 @@
+local ContentProvider = game:GetService("ContentProvider")
 --!strict
 local PhotoshopIntegration = script:FindFirstAncestor("PhotoshopIntegration")
 local Packages = PhotoshopIntegration.Packages
@@ -145,14 +146,44 @@ function InstanceWirerComponent:render()
 end
 
 function InstanceWirerComponent:renderPropertyWires(i)
+
 	local property_wiring_state = self.props.combinedPropertyState[self.props.properties[i]]
 	local show_unwire = property_wiring_state ~= PluginEnum.WIRED_NOT
+	local wireLabel = 'Wire'
+	local unwireLabel = 'Unwire'
 
+	-- property preview
+	local content = nil -- todo MI: put placeholder
+	print('property wiring state', self.props.properties[i], property_wiring_state)
+	-- print('combinedPropertyState:', property_wiring_state)
+	if property_wiring_state == PluginEnum.WIRED_ALL_CURRENT then 
+		print('!!ALL_CURRENT')
+		content = self.props.fetcher:fetch(self.props.piece)
+	end
+	if property_wiring_state == PluginEnum.WIRED_ALL_OTHER then 
+		local piece_id = self.props.combinedPropertyState['piece_id_' .. self.props.properties[i]]
+		print('all other', piece_id, self.props.combinedPropertyState)
+		content = self.props.fetcher:fetch(self.props.fetcher.pieces_map[piece_id])
+	end
+
+
+	
+	if  #self.props.instances > 1  then 
+		wireLabel = 'Wire All' unwireLabel = 'Unwire All'
+	end
+	
+	local color = PluginEnum.ColorBackground
+	if property_wiring_state == PluginEnum.WIRED_ALL_CURRENT then 
+		color = PluginEnum.ColorBackgroundHighlight
+	end
+
+	
 	return e('Frame', {				
 		Size = UDim2.new(0, 0, 0, 0),
 		AutomaticSize = Enum.AutomaticSize.XY,
 		LayoutOrder = self.props.index + 1, 
-		BackgroundTransparency = 1
+		BackgroundTransparency = 0.8,
+		BackgroundColor3 = color
 		},
 		{
 			Cryo.Dictionary.join({
@@ -171,14 +202,23 @@ function InstanceWirerComponent:renderPropertyWires(i)
 					PaddingBottom = UDim.new(0, PluginEnum.PaddingVertical),
 				}),
 		
-				imagePreview = e('ImageLabel', {
+				imagePreview = content == nil and e('ImageLabel', {
 					
 					Size = UDim2.new(0, PluginEnum.PreviewSize, 0, PluginEnum.PreviewSize),
 					AutomaticSize = Enum.AutomaticSize.XY,
 					BorderSizePixel = 0,
-					Image='http://www.roblox.com/asset/?id=699259085',
+					Image = 'http://www.roblox.com/asset/?id=699259085',
 					
-					LayoutOrder = 1,
+					LayoutOrder = 1
+				}),
+				imageLivePreview = content ~= nil and e('ImageLabel', {
+					
+					Size = UDim2.new(0, PluginEnum.PreviewSize, 0, PluginEnum.PreviewSize),
+					AutomaticSize = Enum.AutomaticSize.XY,
+					BorderSizePixel = 0,
+					ImageContent = content,
+					
+					LayoutOrder = 1
 				}),
 				name = e('TextLabel', {
 					Size = UDim2.new(0, 0, 0, 0),
@@ -193,7 +233,7 @@ function InstanceWirerComponent:renderPropertyWires(i)
 					LayoutOrder = 2
 				}),
 				wireButton = e("TextButton", {
-					Text = 'Wire',
+					Text = wireLabel,
 					AutomaticSize = Enum.AutomaticSize.XY,
 					Size = UDim2.new(0, 0, 0, 0),
 					TextColor3 = PluginEnum.ColorButtonNavigationText,
@@ -207,7 +247,7 @@ function InstanceWirerComponent:renderPropertyWires(i)
 					end,
 				}), 
 				unwireButton = show_unwire and e("TextButton", {
-					Text = 'Unwire',
+					Text = unwireLabel,
 					AutomaticSize = Enum.AutomaticSize.XY,
 					Size = UDim2.new(0, 0, 0, 0),
 					TextColor3 = PluginEnum.ColorButtonSecondaryActionText,

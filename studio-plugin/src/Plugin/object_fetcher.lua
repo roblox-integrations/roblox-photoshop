@@ -2,18 +2,20 @@
 local HttpService = game:GetService("HttpService")
 local AssetService = game:GetService("AssetService")
 local Packages = script:FindFirstAncestor("PhotoshopIntegration").Packages
+local CollectionService = game:GetService("CollectionService")
 
 local t_u = require(script.Parent.tags_util)
 
 local base64 = require(Packages.base64)
 
-local POLL_RATE = 2 -- seconds
+local POLL_RATE = 1 -- seconds
 
 local BASE_URL = 'http://localhost:3000'
 
 local object_fetcher = {
     cache = {},
-    pieces = {}
+    pieces = {}, 
+    pieces_map = {}
 }
 
 export type Piece = {
@@ -47,28 +49,42 @@ local pieces_sync_state : PiecesSyncState = {
 
 
 
+-- CollectionService:GetInstanceAddedSignal('wired'):Connect(function(instance)
+--     update_instance_if_needed(instance)    
+-- end)
 
+-- CollectionService:GetInstanceRemovedSignal('wired'):Connect(function(instance)
+--     update_instance_if_needed(instance)
+-- end)
+
+function object_fetcher:update_instance_if_needed(instance) 
+    local wires = t_u:get_instance_wires(instance)
+    update_wired_instances(instance, wires)
+end 
 
 coroutine.wrap(function()
 
     while true do
-        print('Fetch!111')
         local res = HttpService:GetAsync(BASE_URL .. '/api/pieces')
         local json = HttpService:JSONDecode(res)
         local pieces = json :: { Piece }
         if pieces == nil then pieces = {} end
         object_fetcher.pieces = pieces
-
+        for _, piece in pieces do 
+            -- local replaced, count = string.sub(piece.filePath, 44, #piece.filePath-1)
+            
+            piece.filePath = string.sub(piece.filePath, 44, #piece.filePath)
+        end
 
         local tmp_pieces_map = {}
         for _, p in pieces do
             tmp_pieces_map[p.id] = p
         end
-    
+        object_fetcher.pieces_map = tmp_pieces_map
 
 
         local function process_pieces(pieces: { [string]: Piece })
-            print('object_fetcher:process_pieces')
+            --print('object_fetcher:process_pieces')
             pieces_map = pieces
             -- 1. fetch all wired instances
             local instanceWires = t_u.ts_get_all_wired_in_dm()
@@ -77,7 +93,7 @@ coroutine.wrap(function()
             local maxTimestamp = -1
             for instance, wires in instanceWires do
                 local ts = update_wired_instances(instance, wires)
-                print('ts ' .. ts .. ', maxTs ' .. maxTimestamp)
+                --print('ts ' .. ts .. ', maxTs ' .. maxTimestamp)
                 if ts > maxTimestamp then maxTimestamp = ts end
             end
         
@@ -87,10 +103,9 @@ coroutine.wrap(function()
             --     -- print('piece: ' .. p.filePath .. ', time diff: ' .. (pieces_sync_state.updatedAt - p.updatedAt))
             -- end
         end
-        print('wait for', 100)
+
         process_pieces(tmp_pieces_map)
-        
-        task.wait(100)
+        task.wait(POLL_RATE)
     end
 
 end)()
@@ -157,8 +172,7 @@ function get_piece_update_time(piece: Piece): number
 end
 
 function update_wired_instances(instance: Instance, wires: {}): number
-    print('instance name: ' .. instance.Name)
-    print(wires)
+    local needsTagsUpdate = false
     local maxTimestamp = -1;
     for piece_id, propertyName in wires do 
         -- 1. check if the piece still exists and was recently updated
@@ -166,13 +180,13 @@ function update_wired_instances(instance: Instance, wires: {}): number
         if piece == nil then
             print('remove a wire with non-existent piece_id: ' .. piece_id)
             wires[piece_id] = nil -- remove wire for missing piece
+            needsTagsUpdate = true
             continue
         end
         -- 2. Update wired instance according to the piece type
         -- 2.1 image        
         if piece.type == 'image' then
             if piece.role == 'asset' then
-                print('!!! Uncomment once assets persistance is there')
                 local assetId = get_current_asset_id(piece)
                 if assetId == nil then 
                     print('cant find asset id for piece')
@@ -180,7 +194,7 @@ function update_wired_instances(instance: Instance, wires: {}): number
                 end
                 local assetUrl = 'rbxassetid://' .. assetId
                 if(instance[propertyName] ~= assetUrl) then -- only update the property if changed
-                    print('updating ', propertyName, ' to ', assetUrl)
+                    --print('updating ', propertyName, ' to ', assetUrl)
                     instance[propertyName] = assetUrl
                 end
             else 
@@ -194,7 +208,10 @@ function update_wired_instances(instance: Instance, wires: {}): number
     end
 
     -- 4. persist current wiring config to tags
-    t_u:set_instance_wires(instance, wires)
+    if needsTagsUpdate then 
+        print('tags need update!')
+        t_u:set_instance_wires(instance, wires) 
+    end
 
     return maxTimestamp
 end

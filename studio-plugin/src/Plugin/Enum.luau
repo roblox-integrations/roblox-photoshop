@@ -16,6 +16,7 @@ local enum = {
 
 
 	ColorBackground = theme:GetColor(Enum.StudioStyleGuideColor.MainBackground), 
+	ColorBackgroundHighlight = Color3.fromRGB(150, 100, 0),
 
 	ColorTextPrimary =  theme:GetColor(Enum.StudioStyleGuideColor.DialogButtonText), 
 	ColorTextSecondary = theme:GetColor(Enum.StudioStyleGuideColor.DialogButtonText),
@@ -26,7 +27,7 @@ local enum = {
 	ColorButtonSecondaryActionText = theme:GetColor(Enum.StudioStyleGuideColor.MainBackground),
 	ColorButtonSecondaryActionBackground = Color3.fromRGB(200, 200, 0),
 
-	
+
 	PreviewSize = 65,
 
 
