@@ -183,11 +183,13 @@ function PieceDetailsComponent:render()
 	end
 
 	local dmWirersLabelIndex = i + 1
+	local hasDMWires = false
 	i = i + 2 
 	for _, wirerModel in state.dmWirersModel do 
 		--print('redo DM wirers')
 		local newInstanceWirer = self:buildInstanceWirerComponent(i, wirerModel, true)
 		dmInstanceWirers['selectionInstanceWirer' .. i] = newInstanceWirer
+		local hasDMWires = true
 		i = i + 1
 	end
 
@@ -224,7 +226,7 @@ function PieceDetailsComponent:render()
 		},
 		selectionInstanceWirers, 
 		{
-			dmWirerHeader = e("TextLabel", {
+			dmWirerHeader = hasDMWires and e("TextLabel", {
 			Size = UDim2.new(0, 0, 0, 0),
 			AutomaticSize = Enum.AutomaticSize.XY,
 			LayoutOrder = dmWirersLabelIndex,
