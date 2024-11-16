@@ -17,13 +17,14 @@ export type Piece = {
     id: string,
     role: string, -- "asset|editable"
     type: string, --  "image|mesh|meshtexturepack|pbrpack"
-    filePath: string,
-    fileHash: string,
+    name: string,
+    dir: string,
+    hash: string,
     uploads: {
         {
             assetId: string,
             decalId: string,
-            fileHash: string,
+            hash: string,
             operationId: string
         }
     },
@@ -140,7 +141,7 @@ end)
 
 function get_current_asset_id(piece: Piece): string
     for _, upload in piece.uploads do
-        if piece.fileHash ~= upload.fileHash then continue end
+        if piece.hash ~= upload.hash then continue end
         return upload.assetId
     end
     return nil

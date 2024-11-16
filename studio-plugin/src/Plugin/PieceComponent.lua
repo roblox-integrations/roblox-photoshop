@@ -16,13 +16,15 @@ export type Piece = {
     id: string,
     role: string, -- "asset|editable"
     type: string, --  "image|mesh|meshtexturepack|pbrpack"
-    filePath: string,
-    fileHash: string,
+	name: string,
+	hash: string,
+    dir: string,
+
     uploads: {
         {
             assetId: string,
             decalId: string,
-            fileHash: string,
+            hash: string,
             operationId: string
         }
     },
@@ -122,7 +124,7 @@ function PieceComponent:render()
 				-- hash = e('TextLabel', {
 				-- 	Size = UDim2.new(0, 0, 0, 0),
 				-- 	AutomaticSize = Enum.AutomaticSize.XY,
-				-- 	Text = self.props.piece.fileHash,
+				-- 	Text = self.props.piece.hash,
 				-- 	Font = Enum.Font.BuilderSansMedium,
 				-- 	TextSize = PluginEnum.FontSizeTextPrimary,
 				-- 	TextColor3 = PluginEnum.ColorTextPrimary,

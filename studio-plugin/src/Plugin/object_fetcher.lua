@@ -22,13 +22,14 @@ export type Piece = {
     id: string,
     role: string, -- "asset|editable"
     type: string, --  "image|mesh|meshtexturepack|pbrpack",
-    filePath: string,
-    fileHash: string,
+    name: string,
+    dir: string,
+    hash: string,
     uploads: {
         {
             assetId: string,
             decalId: string,
-            fileHash: string,
+            hash: string,
             operationId: string
         }
     },
@@ -93,7 +94,7 @@ coroutine.wrap(function()
             -- -- 3. update the timestamp
             -- pieces_sync_state.updatedAt = os.time()
             -- for _, p in pieces_map do
-            --     -- print('piece: ' .. p.filePath .. ', time diff: ' .. (pieces_sync_state.updatedAt - p.updatedAt))
+            --     -- print('piece: ' .. p.name .. ', time diff: ' .. (pieces_sync_state.updatedAt - p.updatedAt))
             -- end
         end
 
@@ -107,9 +108,9 @@ end)()
 function object_fetcher:fetch(piece)
     local obj = self.cache[piece.id]
     
---    print('fetch piece with id and hash: ', piece.id, piece.fileHash)
+--    print('fetch piece with id and hash: ', piece.id, piece.hash)
 
-    if obj ~= nil and obj.hash == piece.fileHash then 
+    if obj ~= nil and obj.hash == piece.hash then 
         --print('returning cached version')
         return obj.object 
     end
@@ -134,7 +135,7 @@ function object_fetcher:fetch(piece)
     
     editableImage:WritePixelsBuffer(Vector2.zero, editableImage.Size, decodedData)
     local content = Content.fromObject(editableImage)
-    self.cache[piece.id] = {object = content, hash = piece.fileHash}
+    self.cache[piece.id] = {object = content, hash = piece.hash}
     return content
 end
 
@@ -146,7 +147,7 @@ end
 
 function get_current_asset_id(piece: Piece): string
     for _, upload in piece.uploads do
-        if piece.fileHash ~= upload.fileHash then continue end
+        if piece.hash ~= upload.hash then continue end
         return upload.assetId
     end
     return nil

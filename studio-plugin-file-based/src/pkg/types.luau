@@ -2,8 +2,9 @@ export type Piece = {
     id: string,
     role: string,
     type: string, -- todo enum?
-    filePath: string,
-    fileHash: string,
+    name: string,
+    hash: string,
+    dir: string,
     assetIds: {},
     updatedAt: number,
     deletedAt: number

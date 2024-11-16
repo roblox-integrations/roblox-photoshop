@@ -39,13 +39,14 @@ export type Piece = {
     id: string,
     role: string, -- "asset|editable"
     type: string, --  "image|mesh|meshtexturepack|pbrpack"
-    filePath: string,
-    fileHash: string,
+    name: string,
+	dir: string,
+    hash: string,
     uploads: {
         {
             assetId: string,
             decalId: string,
-            fileHash: string,
+            hash: string,
             operationId: string
         }
     },
@@ -250,7 +251,7 @@ function Widget:renderList()
 	local pieceComponents  = {}
 	local k = 1	
 	for _, piece in self.state.pieces do 
-		-- print('reset pieces: ', piece.id, piece.fileHash)
+		-- print('reset pieces: ', piece.id, piece.hash)
 		local newPieceComponent = e(
 			PieceComponent, 
 			{
