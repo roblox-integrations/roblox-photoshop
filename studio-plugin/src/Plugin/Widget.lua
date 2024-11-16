@@ -28,6 +28,7 @@ end
 local MODE_LIST = 0
 local MODE_PIECE_DETAILS = 1
 
+local updateUIStateAutomatically = true
 
 function Widget:willUnmount()
 	self.onSelectionChanged:Disconnect()
@@ -81,17 +82,23 @@ function Widget:init()
 	})
  	coroutine.wrap(function()
         print("WIDGET starting polling")
- 		-- while true do	
-		-- 	local pieces = getPieces()
-		-- 	if #pieces == 0 then 
-		-- 		wait(1) 
-		-- 		continue
-		-- 	end
-		-- 	self:setState({
-		-- 		pieces = pieces
-		-- 	})
-		-- 	wait(1)
 
+ 		while updateUIStateAutomatically do	
+			local pieces = getPieces()
+			local currentPiece = nil
+			if self.state.currentPiece ~= nil 
+				then 
+					currentPiece = fetcher.pieces_map[self.state.currentPiece.id]
+				else
+			end
+			
+			self:setState({
+				pieces = pieces, 
+				currentPiece = currentPiece
+
+			})
+			task.wait(1)
+		end
 		-- 	-- local elems = self.state.elements
 		-- 	-- if math.fmod(#elems, 2) == 0 then 
 		-- 	-- 	local newIndex = #elems + 1
@@ -121,7 +128,7 @@ function Widget:render()
 	
 
 
-	print('about to render')
+	-- print('about to render')
 	local theme = settings().Studio.Theme
 
 	--if true then return self:renderPlayground() end
@@ -141,7 +148,7 @@ function Widget:render()
 			HorizontalFlex = Enum.UIFlexAlignment.Fill
 		}),
 
-		fetchButton = e("TextButton", {
+		fetchButton = not updateUIStateAutomatically and e("TextButton", {
 			Text = 'Refresh UI',
 			AutomaticSize = Enum.AutomaticSize.XY,
 			Size = UDim2.new(0, 0, 0, 0),
@@ -221,6 +228,7 @@ end
 
 function Widget:renderList()
 	local instanceWirers = {}
+	-- print('render list')
 	if #self.state.selection == 0 and #self.state.pieces == 0 then
 		print('selections are nil')
 		local theme = settings().Studio.Theme
@@ -242,7 +250,7 @@ function Widget:renderList()
 	local pieceComponents  = {}
 	local k = 1	
 	for _, piece in self.state.pieces do 
-		print('reset pieces: ', piece.id, piece.fileHash)
+		-- print('reset pieces: ', piece.id, piece.fileHash)
 		local newPieceComponent = e(
 			PieceComponent, 
 			{

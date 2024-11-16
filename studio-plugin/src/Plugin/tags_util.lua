@@ -52,12 +52,16 @@ function tags_util:wire_instance(instance: Instance, piece_id, property)
     self:set_instance_wires(instance, wires)
 end
 
-function tags_util:unwire_instance(instance: Instance, piece_id)
+function tags_util:unwire_instance(instance: Instance, property)
     
     local wires = self:get_instance_wires(instance)
-    print('set_instance_wires before!', piece_id, wires)
-    wires[piece_id] = nil  
-    self:set_instance_wires(instance, wires)
+    print('set_instance_wires before!', wires)
+    local resulting_wires = {}
+    for piece_id, property in wires do
+        if property == property then continue end
+        resulting_wires[piece_id] = property
+    end
+    self:set_instance_wires(instance, resulting_wires)
 end
 
 
@@ -93,7 +97,7 @@ end
 
 function tags_util:ts_get_all_wired_in_dm(): {[Instance]: {string: string} } 
     local instance_wires = {}
-    for _, inst in CollectionService:GetTagged(TAG_WIRED) do
+    for _, inst in CollectionService:GetTagged(TAG_WIRED) do -- TODO MI: Filter invalid instance types
         instance_wires[inst] = tags_util:get_instance_wires(inst)
     end
     return instance_wires

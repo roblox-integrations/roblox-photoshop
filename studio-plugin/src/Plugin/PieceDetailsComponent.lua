@@ -15,73 +15,60 @@ local PluginEnum = require(script.Parent.Enum)
 local t_u = require(script.Parent.tags_util)
 
 
-function PieceDetailsComponent:onClickSyncButton()
-	-- local state = self.state
-	-- local ok, response = pcall(function()
-	-- 	-- call sync long running method and return
-	-- 	return false
-	-- end)
-	-- if not ok or not response.Success then
-	-- 	if typeof(response) == "table" then
-	-- 		warn("Request failed:", response.StatusCode, response.StatusMessage)
-	-- 	else
-	-- 		warn("Request failed:", response)
-	-- 	end
-	-- 	return
-	-- end
-end
-
-
-
 function PieceDetailsComponent:didMount()
-	print('PieceDetailsComponent:didMount', self.state.wirersModel)
-
-    CollectionService:GetInstanceAddedSignal('wired'):Connect(function(instance)
-		local updateWirersState = t_u:shouldRebuildWirersStat(Selection:Get(), instance)
-		if updateWirersState then self:updateWirersState() end
-    end)
-
-    CollectionService:GetInstanceRemovedSignal('wired'):Connect(function(instance)
-		local updateWirersState = t_u:shouldRebuildWirersStat(Selection:Get(), instance)
-		if updateWirersState then self:updateWirersState() end
-	end)
+	-- print('PieceDetailsComponent:didMount', self.state.selectedWirersModel)
 
 end
 
 function PieceDetailsComponent:willUnmount()
-	 print('PieceDetailsComponent:willUnmount')
+	--  print('PieceDetailsComponent:willUnmount')
 	 
 	--self:onClickDisconnectButton()
 end
 
 function PieceDetailsComponent:init()
-	self:updateWirersState()
+	self:updateSelectedWirersState()
 	self.onSelectionChanged = Selection.SelectionChanged:Connect(function()
-		self:updateWirersState()
+		self:updateSelectedWirersState()
 	end)
+	self:updateDMWirerState()
+
+	CollectionService:GetInstanceAddedSignal('wired'):Connect(function(instance)
+		local updateWirersState = t_u:shouldRebuildWirersStat(Selection:Get(), instance)
+		if updateWirersState then self:updateSelectedWirersState() end
+		self:updateDMWirerState()
+
+
+    end)
+
+    CollectionService:GetInstanceRemovedSignal('wired'):Connect(function(instance)
+		local updateWirersState = t_u:shouldRebuildWirersStat(Selection:Get(), instance)
+		if updateWirersState then self:updateSelectedWirersState() end
+
+		self:updateDMWirerState()
+	end)
+
+
 end
 
-
-function PieceDetailsComponent:updateWirersState()
-	local selection = Selection:Get()
-
-	local result = {
-	}
-	for k, instance in selection do
+function PieceDetailsComponent:buildWirersModel(instances) 
+	local result = {}
+	for k, instance in instances do
 		local wirerModelByType = result[instance.ClassName]
 		if wirerModelByType == nil then 
 			local properties = TextureProperties[instance.ClassName]
-			if properties == nil then properties = {} end
-
+			--if properties == nil then properties = {} end
+			if properties == nil then continue end -- this instance can't be wired
+			
 			wirerModelByType = {
 				instances = {},
 				properties = properties
 			} 
 			result[instance.ClassName] = wirerModelByType
 		end
-
 		table.insert(wirerModelByType.instances, instance)
 	end
+
 
 	for className, wirerModel in result do
 		local count = #wirerModel.instances
@@ -111,7 +98,7 @@ function PieceDetailsComponent:updateWirersState()
 		wirerModel.combinedPropertyState = {}
 		for property, wire_state in properties_wire_state do
 			local count = t_u:table_size(wire_state)
-			print('property->wireState', property, wire_state, count)
+			-- print('property->wireState', property, wire_state, count)
 			
 			if count == 0 then wirerModel.combinedPropertyState[property] = PluginEnum.WIRED_NOT continue  end
 			if count > 1 then wirerModel.combinedPropertyState[property] = PluginEnum.WIRED_MIXED continue end
@@ -122,57 +109,87 @@ function PieceDetailsComponent:updateWirersState()
 				wirerModel.combinedPropertyState['piece_id_' .. property] = Cryo.Dictionary.keys(wire_state)[1]
 			end
 		end	
-		print('!!wireState', wirerModel.combinedPropertyState)
+		-- print('!!wireState', wirerModel.combinedPropertyState)
 	end
-	
-	self:setState({wirersModel = result})
+	return result
+end
+
+function PieceDetailsComponent:updateDMWirerState()
+	local instancesToWires = t_u.ts_get_all_wired_in_dm()
+	local instancesWiredToCurrentPiece = {}
+	for instance, wires in instancesToWires do
+		if wires[self.props.piece.id] ~= nil then table.insert(instancesWiredToCurrentPiece, instance) end
+	end
+	local result = self:buildWirersModel(instancesWiredToCurrentPiece)
+	self:setState({dmWirersModel = result})
+end
+
+
+function PieceDetailsComponent:updateSelectedWirersState()
+	local selection = Selection:Get()
+	local result = self:buildWirersModel(selection)
+	self:setState({selectedWirersModel = result})
 end
 
 function PieceDetailsComponent.getDerivedStateFromProps(props)
 	return props
 end
 
+function PieceDetailsComponent:buildInstanceWirerComponent(i, wirerModel)
+	return e(
+		InstanceWirerComponent, 
+		{
+			index = i,
+			instances = wirerModel.instances, 
+			properties = wirerModel.properties,
+			header = wirerModel.header,
+			fetcher = self.props.fetcher,
+			piece = self.props.piece,
+			combinedPropertyState = wirerModel.combinedPropertyState,
 
+			onClick = function(instances, propertyName)
+				for _, instance in instances do
+					-- print('wire instance', instance, self.props.piece.id, propertyName)
+					t_u:wire_instance(instance, self.props.piece.id, propertyName)
+					self.props.fetcher:update_instance_if_needed(instance)
+				end
+			end, 
+			onUwireClick = function(instances, propertyName) 
+				for _, instance in instances do
+					-- print('unwire all')
+					t_u:unwire_instance(instance, propertyName)
+				end
+				
+			end
+		})
+end
 
 function PieceDetailsComponent:render()
 	local state = self.state
-	local instanceWirers = {}
 
-	local i = 1
-	for className, wirerModel in state.wirersModel do 
-		print('redo wirers')
-		local newInstanceWirer = e(
-			InstanceWirerComponent, 
-			{
-				index = i,
-				instances = wirerModel.instances, 
-				properties = wirerModel.properties,
-				header = wirerModel.header,
-				fetcher = self.props.fetcher,
-				piece = self.props.piece,
-				combinedPropertyState = wirerModel.combinedPropertyState,
-
-				onClick = function(instances, propertyName)
-					for _, instance in instances do
-						t_u:wire_instance(instance, self.props.piece.id, propertyName)
-						self.props.fetcher:update_instance_if_needed(instance)
-					end
-				end, 
-				onUwireClick = function(instances) 
-					for _, instance in instances do
-						print('unwire all')
-
-						-- TODO MI: handle properties wired to other pieces!!!
-						t_u:unwire_instance(instance, self.props.piece.id)
-					end
-					
-				end
+	local selectionInstanceWirers = {}
+	local dmInstanceWirers = {}
 
 
-			})
-		instanceWirers['instanceWirer' .. i] = newInstanceWirer
+	local i = 3
+	for _, wirerModel in state.selectedWirersModel do 
+		-- print('redo wirers')
+		local newInstanceWirer = self:buildInstanceWirerComponent(i, wirerModel)
+		selectionInstanceWirers['selectionInstanceWirer' .. i] = newInstanceWirer
 		i = i + 1
 	end
+
+	local dmWirersLabelIndex = i + 1
+	i = i + 2 
+	for _, wirerModel in state.dmWirersModel do 
+		--print('redo DM wirers')
+		local newInstanceWirer = self:buildInstanceWirerComponent(i, wirerModel)
+		dmInstanceWirers['selectionInstanceWirer' .. i] = newInstanceWirer
+		i = i + 1
+	end
+
+
+
 	return e("Frame", {
 		BackgroundTransparency = 1,
 		Size = UDim2.new(0, 0, 0, 0),
@@ -181,17 +198,50 @@ function PieceDetailsComponent:render()
 	}, {
 		Cryo.Dictionary.join({
 			uiListLayout = e("UIListLayout", {
-				Padding = UDim.new(0, 0),
+				Padding = UDim.new(0, 10),
 				HorizontalAlignment = Enum.HorizontalAlignment.Left,
 				SortOrder = Enum.SortOrder.LayoutOrder,
+				HorizontalFlex = Enum.UIFlexAlignment.Fill
+
 			}),
-		}, self:renderPreviewAndName(1), instanceWirers)
+		}, self:renderPreviewAndName(1), 
+		{
+				selectedHeader = e("TextLabel", {
+				Size = UDim2.new(0, 0, 0, 0),
+				AutomaticSize = Enum.AutomaticSize.XY,
+				LayoutOrder = 2,
+				Text = "Selected: ",
+				Font = Enum.Font.BuilderSansMedium,
+				TextSize = 20,
+				TextColor3 = PluginEnum.ColorTextPrimary,
+				BackgroundColor3 = PluginEnum.ColorBackground,
+				BorderSizePixel = 0,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				})
+		},
+		selectionInstanceWirers, 
+		{
+			dmWirerHeader = e("TextLabel", {
+			Size = UDim2.new(0, 0, 0, 0),
+			AutomaticSize = Enum.AutomaticSize.XY,
+			LayoutOrder = dmWirersLabelIndex,
+			Text = "Wired to:",
+			Font = Enum.Font.BuilderSansMedium,
+			TextSize = 20,
+			TextColor3 = PluginEnum.ColorTextPrimary,
+			BackgroundColor3 = PluginEnum.ColorBackground,
+			BorderSizePixel = 0,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			})
+		},
+		dmInstanceWirers		
+		)
 	})
 end
 
 
 function PieceDetailsComponent:renderPreviewAndName(order: number)
-	print('render piece details component')
+	-- print('render piece details component')
 
 	local content = self.props.fetcher:fetch(self.props.piece)
 	return {
@@ -226,7 +276,7 @@ function PieceDetailsComponent:renderPreviewAndName(order: number)
 		nameTop = e('TextLabel', {
 			Size = UDim2.new(0, 0, 0, 0),
 			AutomaticSize = Enum.AutomaticSize.XY,
-			Text = self.props.piece.filePath,
+			Text = self.props.piece.name,
 			Font = Enum.Font.BuilderSansBold,
 			TextSize = PluginEnum.FontSizeTextPrimary,
 			TextColor3 = PluginEnum.ColorTextPrimary,

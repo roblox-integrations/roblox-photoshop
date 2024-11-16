@@ -21,7 +21,7 @@ function App:init()
 end
 
 function App:render()
-	local pluginName = "Ronron Asset Sync"
+	local pluginName = "RonRon Asset Sync"
 
 	return e(StudioPluginContext.Provider, {
 		value = self.props.plugin,
@@ -54,7 +54,7 @@ function App:render()
 		}),
 		sharedToolbarButton = e(StudioSharedToolbar, {
 			combinerName = "Roblox-Integration-Toolbar",
-			toolbarName = "Ronron",
+			toolbarName = "RonRon",
 			buttonName = "Assets Sync",
 			buttonIcon = "rbxassetid://103039951720673",
 			buttonTooltip = "Toggle the Asset Sync widget",

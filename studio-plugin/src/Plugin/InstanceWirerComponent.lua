@@ -87,13 +87,6 @@ function InstanceWirerComponent:onClickSyncButton()
 end
 
 function InstanceWirerComponent:didMount()
-	 -- TODO MI add listener for tags changes
-		-- if self.state.source and self.state.propertyName then
-		-- 	self.state.source:GetPropertyChangedSignal(self.state.propertyName):Connect(function()
-		-- 		self.state.shownImage = self.state.source[self.state.propertyName]
-		-- 		self.props.onSessionDataChanged(self)
-		-- 	end)
-		-- end
 end
 
 function InstanceWirerComponent:willUnmount()
@@ -154,15 +147,13 @@ function InstanceWirerComponent:renderPropertyWires(i)
 
 	-- property preview
 	local content = nil -- todo MI: put placeholder
-	print('property wiring state', self.props.properties[i], property_wiring_state)
+	-- print('property wiring state', self.props.properties[i], property_wiring_state)
 	-- print('combinedPropertyState:', property_wiring_state)
 	if property_wiring_state == PluginEnum.WIRED_ALL_CURRENT then 
-		print('!!ALL_CURRENT')
 		content = self.props.fetcher:fetch(self.props.piece)
 	end
 	if property_wiring_state == PluginEnum.WIRED_ALL_OTHER then 
 		local piece_id = self.props.combinedPropertyState['piece_id_' .. self.props.properties[i]]
-		print('all other', piece_id, self.props.combinedPropertyState)
 		content = self.props.fetcher:fetch(self.props.fetcher.pieces_map[piece_id])
 	end
 
@@ -192,7 +183,8 @@ function InstanceWirerComponent:renderPropertyWires(i)
 					HorizontalAlignment = Enum.HorizontalAlignment.Left,
 					SortOrder = Enum.SortOrder.LayoutOrder,
 					FillDirection = Enum.FillDirection.Horizontal, 
-					VerticalAlignment =  Enum.VerticalAlignment.Center
+					VerticalAlignment =  Enum.VerticalAlignment.Center,
+					HorizontalFlex = Enum.UIFlexAlignment.Fill
 				}),
 			}, {
 				uiPadding = e("UIPadding", {
@@ -257,7 +249,7 @@ function InstanceWirerComponent:renderPropertyWires(i)
 					TextSize = PluginEnum.FontSizeNavigationButton,
 					LayoutOrder = 3,
 					[React.Event.MouseButton1Click] = function()
-						self.props.onUwireClick(self.props.instances)
+						self.props.onUwireClick(self.props.instances, self.props.properties[i])
 					end,
 				})
 

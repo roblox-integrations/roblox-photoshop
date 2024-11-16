@@ -21,7 +21,7 @@ local object_fetcher = {
 export type Piece = {
     id: string,
     role: string, -- "asset|editable"
-    type: string, --  "image|mesh|meshtexturepack|pbrpack"
+    type: string, --  "image|mesh|meshtexturepack|pbrpack",
     filePath: string,
     fileHash: string,
     uploads: {
@@ -70,22 +70,15 @@ coroutine.wrap(function()
         local pieces = json :: { Piece }
         if pieces == nil then pieces = {} end
         object_fetcher.pieces = pieces
-        for _, piece in pieces do 
-            -- local replaced, count = string.sub(piece.filePath, 44, #piece.filePath-1)
-            
-            piece.filePath = string.sub(piece.filePath, 44, #piece.filePath)
-        end
 
         local tmp_pieces_map = {}
         for _, p in pieces do
             tmp_pieces_map[p.id] = p
         end
         object_fetcher.pieces_map = tmp_pieces_map
-
+        pieces_map = tmp_pieces_map
 
         local function process_pieces(pieces: { [string]: Piece })
-            --print('object_fetcher:process_pieces')
-            pieces_map = pieces
             -- 1. fetch all wired instances
             local instanceWires = t_u.ts_get_all_wired_in_dm()
             
@@ -114,10 +107,10 @@ end)()
 function object_fetcher:fetch(piece)
     local obj = self.cache[piece.id]
     
-    print('fetch piece with id and hash: ', piece.id, piece.fileHash)
+--    print('fetch piece with id and hash: ', piece.id, piece.fileHash)
 
     if obj ~= nil and obj.hash == piece.fileHash then 
-        print('returning cached version')
+        --print('returning cached version')
         return obj.object 
     end
     
@@ -189,7 +182,7 @@ function update_wired_instances(instance: Instance, wires: {}): number
             if piece.role == 'asset' then
                 local assetId = get_current_asset_id(piece)
                 if assetId == nil then 
-                    print('cant find asset id for piece')
+                    --print('cant find asset id for piece')
                     continue 
                 end
                 local assetUrl = 'rbxassetid://' .. assetId
@@ -206,7 +199,6 @@ function update_wired_instances(instance: Instance, wires: {}): number
             print('! Unsupported Piece type: ' .. piece.type)
         end
     end
-
     -- 4. persist current wiring config to tags
     if needsTagsUpdate then 
         print('tags need update!')

@@ -49,8 +49,6 @@ function PieceComponent:onClickSyncButton()
 end
 
 function PieceComponent:didMount()
-	local content = self.props.fetcher:fetch(self.props.piece)
-	self:setState({content = content})
 	 -- add listener for tags changes
 		-- if self.state.source and self.state.propertyName then
 		-- 	self.state.source:GetPropertyChangedSignal(self.state.propertyName):Connect(function()
@@ -73,8 +71,7 @@ end
 
 
 function PieceComponent:render()
-	
-	local content = self.state.content	
+	local content = self.props.fetcher:fetch(self.props.piece)
 	return e('Frame', {				
 		Size = UDim2.new(0, 0, 0, 0),
 		AutomaticSize = Enum.AutomaticSize.XY,
@@ -113,7 +110,7 @@ function PieceComponent:render()
 				name = e('TextLabel', {
 					Size = UDim2.new(0, 0, 0, 0),
 					AutomaticSize = Enum.AutomaticSize.XY,
-					Text = self.props.piece.filePath,
+					Text = self.props.piece.name,
 					Font = Enum.Font.BuilderSansMedium,
 					TextSize = PluginEnum.FontSizeTextPrimary,
 					TextColor3 = PluginEnum.ColorTextPrimary,
