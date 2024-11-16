@@ -146,7 +146,8 @@ function Widget:render()
 			Padding = UDim.new(0, 4),
 			HorizontalAlignment = Enum.HorizontalAlignment.Left,
 			SortOrder = Enum.SortOrder.LayoutOrder,
-			HorizontalFlex = Enum.UIFlexAlignment.Fill
+			HorizontalFlex = Enum.UIFlexAlignment.Fill,
+			
 		}),
 
 		fetchButton = not updateUIStateAutomatically and e("TextButton", {
@@ -311,9 +312,10 @@ function Widget:renderList()
 			},
 			Cryo.Dictionary.join({
 				uiListLayout = e("UIListLayout", {
-					Padding = UDim.new(0, 0),
+					Padding = UDim.new(0, PluginEnum.PaddingVertical),
 					HorizontalAlignment = Enum.HorizontalAlignment.Left,
 					SortOrder = Enum.SortOrder.LayoutOrder,
+					HorizontalFlex = Enum.UIFlexAlignment.Fill
 				}),
 			}, pieceComponents)
 		)	

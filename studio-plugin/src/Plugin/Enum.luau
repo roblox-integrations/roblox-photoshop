@@ -8,12 +8,12 @@ local enum = {
 	FontSizeTextPrimary = 15,
 	FontSizeTextSecondary = 13,
 	FontSizeHeader = 20,
-	FontSizeNavigationButton = 24,
+	FontSizeNavigationButton = 20,
 
 
 	PaddingHorizontal = 20,
-	PaddingVertical = 0, 
-
+	PaddingVertical = 2, 
+	PaddingVerticalTight = 4, 
 
 	ColorBackground = theme:GetColor(Enum.StudioStyleGuideColor.MainBackground), 
 	ColorBackgroundHighlight = Color3.fromRGB(150, 100, 0),
@@ -30,7 +30,7 @@ local enum = {
 
 	PreviewSize = 65,
 
-
+	DetailsSize = 120,
 
 	WIRED_NOT = 0,
 	WIRED_MIXED = 1,

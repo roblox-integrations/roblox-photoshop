@@ -15,7 +15,8 @@ local BASE_URL = 'http://localhost:3000'
 local object_fetcher = {
     cache = {},
     pieces = {}, 
-    pieces_map = {}
+    pieces_map = {}, 
+    piece_is_wired = {}
 }
 
 export type Piece = {
@@ -82,7 +83,14 @@ coroutine.wrap(function()
         local function process_pieces(pieces: { [string]: Piece })
             -- 1. fetch all wired instances
             local instanceWires = t_u.ts_get_all_wired_in_dm()
-            
+            local piece_is_wired = {}
+            for instance, wires in instanceWires do
+                for piece_id, _ in wires do
+                    piece_is_wired[piece_id] = true
+                end 
+            end
+            object_fetcher.piece_is_wired = piece_is_wired
+
             -- 2. update wired instance when needed and cleanup wires for missing pieces
             local maxTimestamp = -1
             for instance, wires in instanceWires do

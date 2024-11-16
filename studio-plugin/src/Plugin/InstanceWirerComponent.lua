@@ -6,6 +6,7 @@ local Packages = PhotoshopIntegration.Packages
 local Cryo = require(Packages.Cryo)
 
 local React = require(Packages.React)
+local Selection = game:GetService("Selection")
 
 local e = React.createElement
 
@@ -109,32 +110,22 @@ function InstanceWirerComponent:render()
 		local p = self:renderPropertyWires(i)
 		properties[i] = p;
 	end
-	local header =  e("TextLabel", {
-		Size = UDim2.new(0, 0, 0, 0),
-		AutomaticSize = Enum.AutomaticSize.XY,
-		Text = self.props.header,
-		Font = Enum.Font.BuilderSansBold,
-		TextSize = PluginEnum.FontSizeHeader,
-		TextColor3 = PluginEnum.ColorTextPrimary,
-		BackgroundColor3 = PluginEnum.ColorBackground,
-		BorderSizePixel = 0,
-		TextXAlignment = Enum.TextXAlignment.Left,
-		LayoutOrder = 1
-	})
 	
 	return React.createElement("Frame", {
 		BackgroundTransparency = 1,
 		Size = UDim2.new(0, 0, 0, 0),
 		AutomaticSize = Enum.AutomaticSize.XY,
-		LayoutOrder = self.props.index,
+		LayoutOrder = self.props.index
+		
 	}, {
 		Cryo.Dictionary.join({
 				uiListLayout = e("UIListLayout", {
 					Padding = UDim.new(0, PluginEnum.PaddingVertical),
 					HorizontalAlignment = Enum.HorizontalAlignment.Left,
 					SortOrder = Enum.SortOrder.LayoutOrder,
+					
 				}),
-			}, {header = header}, properties) 
+			}, {header = self:renderHeaderAndLink()}, properties) 
 	})
 end
 
@@ -258,4 +249,54 @@ function InstanceWirerComponent:renderPropertyWires(i)
 		)
 end
 
+function InstanceWirerComponent:renderHeaderAndLink()
+	return e('Frame', {				
+		Size = UDim2.new(0, 0, 0, 0),
+		AutomaticSize = Enum.AutomaticSize.XY,
+		LayoutOrder = 1, 
+		BackgroundTransparency = 1,
+		
+		},
+		{
+			
+			uiListLayout = e("UIListLayout", {
+				Padding = UDim.new(0, PluginEnum.PaddingHorizontal),
+				HorizontalAlignment = Enum.HorizontalAlignment.Center,
+				SortOrder = Enum.SortOrder.LayoutOrder,
+				FillDirection = Enum.FillDirection.Horizontal, 
+				VerticalAlignment =  Enum.VerticalAlignment.Center,
+				HorizontalFlex = Enum.UIFlexAlignment.Fill
+			}),
+			header =  e("TextLabel", {
+				Size = UDim2.new(0, 0, 0, 0),
+				AutomaticSize = Enum.AutomaticSize.XY,
+				Text = self.props.header,
+				Font = Enum.Font.BuilderSansMedium,
+				TextSize = PluginEnum.FontSizeHeader,
+				TextColor3 = PluginEnum.ColorTextPrimary,
+				BackgroundColor3 = PluginEnum.ColorBackground,
+				BorderSizePixel = 0,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				LayoutOrder = 1
+			}),
+			unwireButton = self.props.showSelectButton and e("TextButton", {
+				Text = '<u>Select</u>',
+				AutomaticSize = Enum.AutomaticSize.XY,
+				Size = UDim2.new(0, 0, 0, 0),
+				RichText = true,
+				TextColor3 = PluginEnum.ColorButtonSecondaryActionBackground,
+				BackgroundColor3 = PluginEnum.ColorBackground,
+				BorderSizePixel = 0,
+				Font = Enum.Font.BuilderSansMedium,
+				TextSize = PluginEnum.FontSizeNavigationButton,
+				LayoutOrder = 2,
+				[React.Event.MouseButton1Click] = function()
+					Selection:Add(self.props.instances)
+				end,
+			})
+
+		    
+		})	
+
+end
 return InstanceWirerComponent

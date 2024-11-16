@@ -135,7 +135,7 @@ function PieceDetailsComponent.getDerivedStateFromProps(props)
 	return props
 end
 
-function PieceDetailsComponent:buildInstanceWirerComponent(i, wirerModel)
+function PieceDetailsComponent:buildInstanceWirerComponent(i, wirerModel, showSelectButton)
 	return e(
 		InstanceWirerComponent, 
 		{
@@ -145,6 +145,7 @@ function PieceDetailsComponent:buildInstanceWirerComponent(i, wirerModel)
 			header = wirerModel.header,
 			fetcher = self.props.fetcher,
 			piece = self.props.piece,
+			showSelectButton = showSelectButton,
 			combinedPropertyState = wirerModel.combinedPropertyState,
 
 			onClick = function(instances, propertyName)
@@ -171,11 +172,13 @@ function PieceDetailsComponent:render()
 	local dmInstanceWirers = {}
 
 
-	local i = 3
+	local i = 3 
+	local hasSelectionToWire = false
 	for _, wirerModel in state.selectedWirersModel do 
 		-- print('redo wirers')
-		local newInstanceWirer = self:buildInstanceWirerComponent(i, wirerModel)
+		local newInstanceWirer = self:buildInstanceWirerComponent(i, wirerModel, false)
 		selectionInstanceWirers['selectionInstanceWirer' .. i] = newInstanceWirer
+		hasSelectionToWire = true
 		i = i + 1
 	end
 
@@ -183,7 +186,7 @@ function PieceDetailsComponent:render()
 	i = i + 2 
 	for _, wirerModel in state.dmWirersModel do 
 		--print('redo DM wirers')
-		local newInstanceWirer = self:buildInstanceWirerComponent(i, wirerModel)
+		local newInstanceWirer = self:buildInstanceWirerComponent(i, wirerModel, true)
 		dmInstanceWirers['selectionInstanceWirer' .. i] = newInstanceWirer
 		i = i + 1
 	end
@@ -206,17 +209,17 @@ function PieceDetailsComponent:render()
 			}),
 		}, self:renderPreviewAndName(1), 
 		{
-				selectedHeader = e("TextLabel", {
+				selectedHeader = hasSelectionToWire and  e("TextLabel", {
 				Size = UDim2.new(0, 0, 0, 0),
 				AutomaticSize = Enum.AutomaticSize.XY,
 				LayoutOrder = 2,
-				Text = "Selected: ",
-				Font = Enum.Font.BuilderSansMedium,
-				TextSize = 20,
+				Text = "Selected:",
+				Font = Enum.Font.BuilderSansBold,
+				TextSize = PluginEnum.FontSizeHeader,
 				TextColor3 = PluginEnum.ColorTextPrimary,
 				BackgroundColor3 = PluginEnum.ColorBackground,
 				BorderSizePixel = 0,
-				TextXAlignment = Enum.TextXAlignment.Left,
+				TextXAlignment = Enum.TextXAlignment.Center,
 				})
 		},
 		selectionInstanceWirers, 
@@ -226,12 +229,12 @@ function PieceDetailsComponent:render()
 			AutomaticSize = Enum.AutomaticSize.XY,
 			LayoutOrder = dmWirersLabelIndex,
 			Text = "Wired to:",
-			Font = Enum.Font.BuilderSansMedium,
-			TextSize = 20,
+			Font = Enum.Font.BuilderSansBold,
+			TextSize = PluginEnum.FontSizeHeader,
 			TextColor3 = PluginEnum.ColorTextPrimary,
 			BackgroundColor3 = PluginEnum.ColorBackground,
 			BorderSizePixel = 0,
-			TextXAlignment = Enum.TextXAlignment.Left,
+			TextXAlignment = Enum.TextXAlignment.Center,
 			})
 		},
 		dmInstanceWirers		
@@ -259,7 +262,7 @@ function PieceDetailsComponent:renderPreviewAndName(order: number)
 			SortOrder = Enum.SortOrder.LayoutOrder,
 		}),
 		texturePreviewTop = content ~= nil and e("ImageLabel", {
-			Size = UDim2.new(0, PluginEnum.PreviewSize, 0, PluginEnum.PreviewSize),
+			Size = UDim2.new(0, PluginEnum.DetailsSize, 0, PluginEnum.DetailsSize),
 			AutomaticSize = Enum.AutomaticSize.XY,
 			BackgroundColor3 = PluginEnum.ColorBackground,
 			BorderSizePixel = 0,

@@ -105,7 +105,6 @@ end
 
 
 
-
 function tags_util:table_size(tab) 
     local count = 0
     for _, _ in tab do

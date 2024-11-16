@@ -74,6 +74,12 @@ end
 
 function PieceComponent:render()
 	local content = self.props.fetcher:fetch(self.props.piece)
+	local wiredLabelTransparency = 1
+	if self.props.fetcher.piece_is_wired[self.props.piece.id] then 
+		wiredLabelTransparency = 0
+	end 
+
+
 	return e('Frame', {				
 		Size = UDim2.new(0, 0, 0, 0),
 		AutomaticSize = Enum.AutomaticSize.XY,
@@ -96,9 +102,21 @@ function PieceComponent:render()
 					PaddingRight = UDim.new(0, PluginEnum.PaddingHorizontal),
 					PaddingTop = UDim.new(0, PluginEnum.PaddingVertical),
 					PaddingBottom = UDim.new(0, PluginEnum.PaddingVertical),
-					
 				}),
-		
+				
+				wireState =  e('TextLabel', {
+					Size = UDim2.new(0, 0, 0, 0),
+					AutomaticSize = Enum.AutomaticSize.XY,
+					Text = '⚡️',
+					Font = Enum.Font.BuilderSansMedium,
+					TextSize = PluginEnum.FontSizeTextPrimary,
+					TextColor3 = PluginEnum.ColorTextPrimary,
+					BackgroundColor3 = PluginEnum.ColorBackground,
+					BorderSizePixel = 0,
+					TextXAlignment = Enum.TextXAlignment.Left,
+					LayoutOrder = 2,
+					TextTransparency = wiredLabelTransparency
+				}),
 				imagePreview = content ~= nil and e('ImageLabel', {
 					
 					Size = UDim2.new(0, PluginEnum.PreviewSize, 0, PluginEnum.PreviewSize),
@@ -106,7 +124,7 @@ function PieceComponent:render()
 					BackgroundColor3 = PluginEnum.ColorBackground,
 					BorderSizePixel = 0,
 					ImageContent = content,
-					LayoutOrder = 1,
+					LayoutOrder = 3,
 				}),
 
 				name = e('TextLabel', {
@@ -119,7 +137,7 @@ function PieceComponent:render()
 					BackgroundColor3 = PluginEnum.ColorBackground,
 					BorderSizePixel = 0,
 					TextXAlignment = Enum.TextXAlignment.Left,
-					LayoutOrder = 2
+					LayoutOrder = 4
 				}),
 				-- hash = e('TextLabel', {
 				-- 	Size = UDim2.new(0, 0, 0, 0),
@@ -143,7 +161,7 @@ function PieceComponent:render()
 					BorderSizePixel = 0,
 					Font = Enum.Font.BuilderSansBold,
 					TextSize = PluginEnum.FontSizeNavigationButton,
-					LayoutOrder = 3,
+					LayoutOrder = 5,
 					[React.Event.MouseButton1Click] = function()
 						self.props.onClick()
 					end,
