@@ -67,47 +67,53 @@ end
 coroutine.wrap(function()
 
     while true do
-        local res = HttpService:GetAsync(BASE_URL .. '/api/pieces')
-        local json = HttpService:JSONDecode(res)
-        local pieces = json :: { Piece }
-        if pieces == nil then pieces = {} end
-        object_fetcher.pieces = pieces
+        local function fetchPiecesFromNetwork() 
+            local res = HttpService:GetAsync(BASE_URL .. '/api/pieces')
+            local json = HttpService:JSONDecode(res)
+            local pieces = json :: { Piece }
+            if pieces == nil then pieces = {} end
+            object_fetcher.pieces = pieces
 
-        local tmp_pieces_map = {}
-        for _, p in pieces do
-            tmp_pieces_map[p.id] = p
-        end
-        object_fetcher.pieces_map = tmp_pieces_map
-        pieces_map = tmp_pieces_map
-
-        local function process_pieces(pieces: { [string]: Piece })
-            -- 1. fetch all wired instances
-            local instanceWires = t_u.ts_get_all_wired_in_dm()
-            local piece_is_wired = {}
-            for instance, wires in instanceWires do
-                for piece_id, _ in wires do
-                    piece_is_wired[piece_id] = true
-                end 
+            local tmp_pieces_map = {}
+            for _, p in pieces do
+                tmp_pieces_map[p.id] = p
             end
-            object_fetcher.piece_is_wired = piece_is_wired
+            object_fetcher.pieces_map = tmp_pieces_map
+            pieces_map = tmp_pieces_map
 
-            -- 2. update wired instance when needed and cleanup wires for missing pieces
-            local maxTimestamp = -1
-            for instance, wires in instanceWires do
-                local ts = update_wired_instances(instance, wires)
-                --print('ts ' .. ts .. ', maxTs ' .. maxTimestamp)
-                if ts > maxTimestamp then maxTimestamp = ts end
-            end
-        
-            -- -- 3. update the timestamp
-            -- pieces_sync_state.updatedAt = os.time()
-            -- for _, p in pieces_map do
-            --     -- print('piece: ' .. p.name .. ', time diff: ' .. (pieces_sync_state.updatedAt - p.updatedAt))
-            -- end
+            local function process_pieces(pieces: { [string]: Piece })
+                -- 1. fetch all wired instances
+                local instanceWires = t_u.ts_get_all_wired_in_dm()
+                local piece_is_wired = {}
+                for instance, wires in instanceWires do
+                    for piece_id, _ in wires do
+                        piece_is_wired[piece_id] = true
+                    end 
+                end
+                object_fetcher.piece_is_wired = piece_is_wired
+
+                -- 2. update wired instance when needed and cleanup wires for missing pieces
+                local maxTimestamp = -1
+                for instance, wires in instanceWires do
+                    local ts = update_wired_instances(instance, wires)
+                    --print('ts ' .. ts .. ', maxTs ' .. maxTimestamp)
+                    if ts > maxTimestamp then maxTimestamp = ts end
+                end
+            
+                -- -- 3. update the timestamp
+                -- pieces_sync_state.updatedAt = os.time()
+                -- for _, p in pieces_map do
+                --     -- print('piece: ' .. p.name .. ', time diff: ' .. (pieces_sync_state.updatedAt - p.updatedAt))
+                -- end
         end
-
         process_pieces(tmp_pieces_map)
-        task.wait(POLL_RATE)
+    end
+    local status, err = pcall(fetchPiecesFromNetwork)
+    if not status then
+        -- MI bubble the error up, display in UI
+        print('error fetching pieces', err)
+    end
+    task.wait(POLL_RATE)
     end
 
 end)()
@@ -123,30 +129,39 @@ function object_fetcher:fetch(piece)
         return obj.object 
     end
 
+     local function fetchFromNetwork() 
+        local url = BASE_URL .. '/api/pieces/' .. piece.id .. '/raw'
+        print('URL: ' .. url)
+        local res = HttpService:GetAsync(url)
+        local json = HttpService:JSONDecode(res)
     
-    local url = BASE_URL .. '/api/pieces/' .. piece.id .. '/raw'
-    print('URL: ' .. url)
-    local res = HttpService:GetAsync(url)
-    local json = HttpService:JSONDecode(res)
+        
+        if piece.type == 'image' then
+            local width = json['width']
+            local height = json['height']
+            local b64string = json['bitmap']
+            local options = { Size = Vector2.new(width, height) }
+            local editableImage = AssetService:CreateEditableImage(options)
+            local decodedData = base64.decode(buffer.fromstring(b64string))
+            editableImage:WritePixelsBuffer(Vector2.zero, editableImage.Size, decodedData)
+            local content = Content.fromObject(editableImage)
+            self.cache[piece.id] = {object = content, hash = piece.hash}
+            return content
+        end
+        if piece.type == 'mesh' then
+            local b64string = json['base64']
+            local decodedData = base64.decode(buffer.fromstring(b64string))
+            local meshString = buffer.tostring(decodedData)
+            print('mesh parsed')
+        end
 
     
-    if piece.type == 'image' then
-        local width = json['width']
-        local height = json['height']
-        local b64string = json['bitmap']
-        local options = { Size = Vector2.new(width, height) }
-        local editableImage = AssetService:CreateEditableImage(options)
-        local decodedData = base64.decode(buffer.fromstring(b64string))
-        editableImage:WritePixelsBuffer(Vector2.zero, editableImage.Size, decodedData)
-        local content = Content.fromObject(editableImage)
-        self.cache[piece.id] = {object = content, hash = piece.hash}
-        return content
-    end
-    if piece.type == 'mesh' then
-        local b64string = json['base64']
-        local decodedData = base64.decode(buffer.fromstring(b64string))
-        local meshString = buffer.tostring(decodedData)
-        print('mesh parsed')
+    end    
+
+    local status, err =  pcall(fetchFromNetwork) 
+    if not status then 
+        -- TODO MI desktop app is off? Bubble up to UI
+        print('error fetching asset from network:', err)
     end
 
     print('!piece type not implemented:', piece.type)
