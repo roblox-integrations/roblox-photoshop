@@ -122,29 +122,35 @@ function object_fetcher:fetch(piece)
         --print('returning cached version')
         return obj.object 
     end
-    
-    if piece.type ~= 'image' then
-        print('not an image, IMPLEMENT ME')
-        return 
-    end
 
+    
     local url = BASE_URL .. '/api/pieces/' .. piece.id .. '/raw'
     print('URL: ' .. url)
     local res = HttpService:GetAsync(url)
     local json = HttpService:JSONDecode(res)
-    local width = json['width']
-    local height = json['height']
-    local b64string = json['bitmap']
-    local options = { Size = Vector2.new(width, height) }
-    local editableImage = AssetService:CreateEditableImage(options)
+
     
-    
-    local decodedData = base64.decode(buffer.fromstring(b64string))
-    
-    editableImage:WritePixelsBuffer(Vector2.zero, editableImage.Size, decodedData)
-    local content = Content.fromObject(editableImage)
-    self.cache[piece.id] = {object = content, hash = piece.hash}
-    return content
+    if piece.type == 'image' then
+        local width = json['width']
+        local height = json['height']
+        local b64string = json['bitmap']
+        local options = { Size = Vector2.new(width, height) }
+        local editableImage = AssetService:CreateEditableImage(options)
+        local decodedData = base64.decode(buffer.fromstring(b64string))
+        editableImage:WritePixelsBuffer(Vector2.zero, editableImage.Size, decodedData)
+        local content = Content.fromObject(editableImage)
+        self.cache[piece.id] = {object = content, hash = piece.hash}
+        return content
+    end
+    if piece.type == 'mesh' then
+        local b64string = json['base64']
+        local decodedData = base64.decode(buffer.fromstring(b64string))
+        local meshString = buffer.tostring(decodedData)
+        print('mesh parsed')
+    end
+
+    print('!piece type not implemented:', piece.type)
+
 end
 
 

@@ -8,7 +8,7 @@ local Selection = game:GetService("Selection")
 local CollectionService = game:GetService("CollectionService")
 
 local PieceDetailsComponent = React.Component:extend("PieceDetailsComponent")
-local TextureProperties = require(script.Parent.TextureProperties)
+local WireableProperties = require(script.Parent.WireableProperties)
 
 local InstanceWirerComponent = require(script.Parent.InstanceWirerComponent)
 local PluginEnum = require(script.Parent.Enum)
@@ -51,15 +51,20 @@ function PieceDetailsComponent:init()
 
 end
 
-function PieceDetailsComponent:buildWirersModel(instances) 
+function PieceDetailsComponent:buildWirersModel(instances, pieceType) 
 	local result = {}
-	for k, instance in instances do
+	for _, instance in instances do
 		local wirerModelByType = result[instance.ClassName]
 		if wirerModelByType == nil then 
-			local properties = TextureProperties[instance.ClassName]
+			local properties = nil
+			if (pieceType == 'image') then
+				properties = WireableProperties['texture'][instance.ClassName]
+			elseif (pieceType == 'mesh') then 
+				properties = WireableProperties['mesh'][instance.ClassName]
+			end
+
 			--if properties == nil then properties = {} end
 			if properties == nil then continue end -- this instance can't be wired
-			
 			wirerModelByType = {
 				instances = {},
 				properties = properties
@@ -120,14 +125,14 @@ function PieceDetailsComponent:updateDMWirerState()
 	for instance, wires in instancesToWires do
 		if wires[self.props.piece.id] ~= nil then table.insert(instancesWiredToCurrentPiece, instance) end
 	end
-	local result = self:buildWirersModel(instancesWiredToCurrentPiece)
+	local result = self:buildWirersModel(instancesWiredToCurrentPiece, self.props.piece.type)
 	self:setState({dmWirersModel = result})
 end
 
 
 function PieceDetailsComponent:updateSelectedWirersState()
 	local selection = Selection:Get()
-	local result = self:buildWirersModel(selection)
+	local result = self:buildWirersModel(selection, self.props.piece.type)
 	self:setState({selectedWirersModel = result})
 end
 
