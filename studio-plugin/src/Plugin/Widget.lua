@@ -31,7 +31,7 @@ local MODE_PIECE_DETAILS = 1
 local updateUIStateAutomatically = true
 
 function Widget:willUnmount()
-	self.onSelectionChanged:Disconnect()
+	--self.onSelectionChanged:Disconnect()
 end
 
 

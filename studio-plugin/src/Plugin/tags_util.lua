@@ -24,7 +24,7 @@ function tags_util:get_instance_wires(instance: Instance)
         local property_wires = HttpService:JSONDecode(replaced) :: {}
         return property_wires
     end
-
+    return {}
 end
 
 
@@ -71,6 +71,7 @@ function tags_util:set_instance_wires(instance: Instance, wires: {})
 
     print('set_instance_wires!', wires)
     instance:RemoveTag(TAG_WIRED)
+
     for _, tag in instance:GetTags() do
         local _, count = string.gsub(tag, TAG_PREFIX, "")
         if count < 1  then
@@ -78,7 +79,7 @@ function tags_util:set_instance_wires(instance: Instance, wires: {})
         end
         instance:RemoveTag(tag)
     end
-
+    
     -- re-setup tags
     local counter = 0;
     for _, _ in wires do
