@@ -51,12 +51,13 @@ Track updates to unwired Pieces and show alerts?
 ```js
 const piece = {
   id: "uuid",
-  fileHash: "abcdefg", // md5 of piece
+  name: "artpiece.png",
+  dir: "/path/to/dir",
+  hash: "abcdefg", // md5 of piece
   role: "asset|editable", // tbd: support EditableImage/EditableMesh where possible
   type: "image|mesh|meshtexturepack|pbrpack", // or tbd mesh+texture pack
   assetIds: [1, 2, 3, 4, 5, 6], // history of asset ids, the last one is the current
   updatedAt: timestamp,
-  filePath: "artpiece.png",
   is_stub: false/true // needed when empty property being edited. We don't want to create an asset from the placeholder, so until the first rewrite of the file we don't save it as an asset
 }
 ```
