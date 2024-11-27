@@ -53,7 +53,8 @@ const piece = {
   id: "uuid",
   fileHash: "abcdefg", // md5 of piece
   role: "asset|editable", // tbd: support EditableImage/EditableMesh where possible
-  type: "image|mesh|meshtexturepack|pbrpack", // or tbd mesh+texture pack
+  type: "image|mesh|meshtexturepack|pbrpack", // or tbd mesh+texture pack: for gltf/fbx have a setting what needs to be imported, e.g. materials + geometry, animations, rigs, etc
+  
   assetIds: [1, 2, 3, 4, 5, 6], // history of asset ids, the last one is the current
   updatedAt: timestamp,
   filePath: "artpiece.png",
