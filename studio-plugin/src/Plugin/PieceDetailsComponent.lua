@@ -191,13 +191,12 @@ function PieceDetailsComponent:render()
 	local hasDMWires = false
 	i = i + 2 
 	for _, wirerModel in state.dmWirersModel do 
-		--print('redo DM wirers')
 		local newInstanceWirer = self:buildInstanceWirerComponent(i, wirerModel, true)
 		dmInstanceWirers['selectionInstanceWirer' .. i] = newInstanceWirer
-		local hasDMWires = true
+
+		hasDMWires = true
 		i = i + 1
 	end
-
 
 
 	return e("Frame", {
@@ -254,6 +253,7 @@ function PieceDetailsComponent:renderPreviewAndName(order: number)
 	-- print('render piece details component')
 
 	local content = self.props.fetcher:fetch(self.props.piece)
+	if self.props.piece.type ~= 'image' then content = nil end
 	return {
 		e("Frame", {
 			BackgroundTransparency = 1,

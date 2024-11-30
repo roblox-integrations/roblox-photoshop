@@ -148,7 +148,7 @@ function InstanceWirerComponent:renderPropertyWires(i)
 		content = self.props.fetcher:fetch(self.props.fetcher.pieces_map[piece_id])
 	end
 
-
+	if self.props.piece.type ~= 'image' then content = nil end
 	
 	if  #self.props.instances > 1  then 
 		wireLabel = 'Wire All' unwireLabel = 'Unwire All'

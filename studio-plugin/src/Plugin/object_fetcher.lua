@@ -5,10 +5,10 @@ local Packages = script:FindFirstAncestor("PhotoshopIntegration").Packages
 local CollectionService = game:GetService("CollectionService")
 
 local t_u = require(script.Parent.tags_util)
-
 local base64 = require(Packages.base64)
 
-local POLL_RATE = 1 -- seconds
+local POLL_RATE = 3 -- seconds
+
 
 local BASE_URL = 'http://localhost:3000'
 
@@ -105,19 +105,58 @@ coroutine.wrap(function()
                 -- for _, p in pieces_map do
                 --     -- print('piece: ' .. p.name .. ', time diff: ' .. (pieces_sync_state.updatedAt - p.updatedAt))
                 -- end
+            end
+            process_pieces(tmp_pieces_map)
         end
-        process_pieces(tmp_pieces_map)
-    end
-    local status, err = pcall(fetchPiecesFromNetwork)
-    if not status then
-        -- MI bubble the error up, display in UI
-        print('error fetching pieces', err)
-    end
-    task.wait(POLL_RATE)
+        local status, err = pcall(fetchPiecesFromNetwork)    
+        if not status then
+            -- MI bubble the error up, display in UI
+            print('error fetching pieces', err)
+        end
+        print('tick')
+        task.wait(POLL_RATE)
+    
     end
 
 end)()
 
+
+
+function RbxToEditableMesh(rbxMesh):EditableMesh 
+	local em = AssetService:CreateEditableMesh({})
+	local vID, uvID, nID, fID = {}, {}, {}, {} 
+	local id = 0
+    print('RbxToEditableMesh', 'in')
+    print('RbxToEditableMesh.v', rbxMesh )
+	for _, v in rbxMesh.v do
+		id = em:AddVertex(Vector3.new(v[1], v[2], v[3]))
+		table.insert(vID, id)	
+	end
+    print('RbxToEditableMesh', 'verts')
+
+	for _, uv in rbxMesh.uv do
+		id = em:AddUV(Vector2.new(uv[1], uv[2]))
+		table.insert(uvID, id)
+	end
+    print('RbxToEditableMesh', 'uvs') 
+	for _, vn in rbxMesh.vn do
+		id = em:AddNormal(Vector3.new(vn[1], vn[2], vn[3]))
+		table.insert(nID, id)
+	end
+
+    print('RbxToEditableMesh', 'normals')
+	for _, face in rbxMesh.faces do
+		-- v1[/vt1][/vn1] v2[/vt2][/vn2] v3[/vt3][/vn3] ...
+		if #face.v ~= 3 then print('not a tri-face, return') end		
+		id = em:AddTriangle(vID[face.v[1][1]], vID[face.v[2][1]], vID[face.v[3][1]])
+		table.insert(fID, id)
+		em:SetFaceUVs(id, {uvID[face.v[1][2]], uvID[face.v[2][2]], uvID[face.v[3][2]]})
+		em:SetFaceNormals(id, {nID[face.v[1][3]], nID[face.v[2][3]],nID[face.v[3][3]]})
+		
+	end
+    print('RbxToEditableMesh', 'faces')
+	return em
+end
 
 function object_fetcher:fetch(piece)
     local obj = self.cache[piece.id]
@@ -129,12 +168,14 @@ function object_fetcher:fetch(piece)
         return obj.object 
     end
 
-     local function fetchFromNetwork() 
+    
+
+    local function fetchFromNetwork()
         local url = BASE_URL .. '/api/pieces/' .. piece.id .. '/raw'
-        print('URL: ' .. url)
+        print('fetchFromNetwork URL: ' .. url)
         local res = HttpService:GetAsync(url)
         local json = HttpService:JSONDecode(res)
-    
+
         
         if piece.type == 'image' then
             local width = json['width']
@@ -152,19 +193,22 @@ function object_fetcher:fetch(piece)
             local b64string = json['base64']
             local decodedData = base64.decode(buffer.fromstring(b64string))
             local meshString = buffer.tostring(decodedData)
-            print('mesh parsed')
+            local mesh = HttpService:JSONDecode(meshString)
+            local em = RbxToEditableMesh(mesh)
+            self.cache[piece.id] = {object = em, hash = piece.hash}
+            print('cached a mesh')
+
         end
 
+        print('!piece type not implemented:', piece.type)
+    end 
     
-    end    
-
-    local status, err =  pcall(fetchFromNetwork) 
-    if not status then 
-        -- TODO MI desktop app is off? Bubble up to UI
-        print('error fetching asset from network:', err)
+        
+    local status, err = pcall(fetchFromNetwork)    
+    if not status then
+        print('error fetchFromNetwork:', err)
     end
 
-    print('!piece type not implemented:', piece.type)
 
 end
 
@@ -225,6 +269,18 @@ function update_wired_instances(instance: Instance, wires: {}): number
             end
 
             -- todo editable 
+        elseif piece.type == 'mesh' then
+            
+            local em = object_fetcher:fetch(piece)
+            if em == nil then
+                print('cant fetch mesh to set', piece.id)
+                continue
+            end
+            print('about to apply mesh')
+
+            local newMeshPart = AssetService:CreateMeshPartAsync(Content.fromObject(em))
+            -- -- local newMeshPart = AssetService:CreateMeshPartAsync(Content.fromUri('rbxassetid://139713999598413'))
+            instance:ApplyMesh(newMeshPart)
         else
             print('! Unsupported Piece type: ' .. piece.type)
         end
