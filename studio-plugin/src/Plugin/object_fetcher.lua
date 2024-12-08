@@ -126,25 +126,21 @@ function RbxToEditableMesh(rbxMesh):EditableMesh
 	local em = AssetService:CreateEditableMesh({})
 	local vID, uvID, nID, fID = {}, {}, {}, {} 
 	local id = 0
-    print('RbxToEditableMesh', 'in')
-    print('RbxToEditableMesh.v', rbxMesh )
 	for _, v in rbxMesh.v do
 		id = em:AddVertex(Vector3.new(v[1], v[2], v[3]))
 		table.insert(vID, id)	
 	end
-    print('RbxToEditableMesh', 'verts')
 
 	for _, uv in rbxMesh.uv do
 		id = em:AddUV(Vector2.new(uv[1], uv[2]))
 		table.insert(uvID, id)
 	end
-    print('RbxToEditableMesh', 'uvs') 
+
 	for _, vn in rbxMesh.vn do
 		id = em:AddNormal(Vector3.new(vn[1], vn[2], vn[3]))
 		table.insert(nID, id)
 	end
 
-    print('RbxToEditableMesh', 'normals')
 	for _, face in rbxMesh.faces do
 		-- v1[/vt1][/vn1] v2[/vt2][/vn2] v3[/vt3][/vn3] ...
 		if #face.v ~= 3 then print('not a tri-face, return') end		
@@ -152,9 +148,7 @@ function RbxToEditableMesh(rbxMesh):EditableMesh
 		table.insert(fID, id)
 		em:SetFaceUVs(id, {uvID[face.v[1][2]], uvID[face.v[2][2]], uvID[face.v[3][2]]})
 		em:SetFaceNormals(id, {nID[face.v[1][3]], nID[face.v[2][3]],nID[face.v[3][3]]})
-		
 	end
-    print('RbxToEditableMesh', 'faces')
 	return em
 end
 
@@ -211,10 +205,6 @@ function object_fetcher:fetch(piece)
 
 
 end
-
-
-
-
 
 
 
