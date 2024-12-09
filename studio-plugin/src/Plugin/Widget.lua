@@ -263,7 +263,8 @@ function Widget:renderList()
 					self:setState({
 						mode = MODE_PIECE_DETAILS,
 						currentPiece = piece})
-				end
+				end, 
+				LayoutOrder = k
 			}
 		)
 		pieceComponents[k] = newPieceComponent
@@ -275,51 +276,14 @@ function Widget:renderList()
 		Size = UDim2.new(0, 0, 0, 0),
 		BackgroundTransparency = 1,
 		LayoutOrder = 3
-	}, {
-		uiListLayout = e("UIListLayout", {
+	}, 
+		Cryo.Dictionary.join({uiListLayout = e("UIListLayout", {
 			Padding = UDim.new(0, 4),
 			HorizontalAlignment = Enum.HorizontalAlignment.Left,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			
-		}),
-
-
-
-		instanceWirersList = e(
-				"Frame",
-				{
-					Size = UDim2.new(0, 0, 0, 0),
-					BackgroundTransparency = 1,
-					AutomaticSize = Enum.AutomaticSize.XY,
-					LayoutOrder = 1,
-				},
-				Cryo.Dictionary.join({
-					uiListLayout = e("UIListLayout", {
-						Padding = UDim.new(0, 0),
-						HorizontalAlignment = Enum.HorizontalAlignment.Left,
-						SortOrder = Enum.SortOrder.LayoutOrder,
-					}),
-				}, instanceWirers)
-			),
-
-		pieceComponentsList = e(
-			"Frame",
-			{
-				Size = UDim2.new(0, 0, 0, 0),
-				BackgroundTransparency = 1,
-				AutomaticSize = Enum.AutomaticSize.XY,
-				LayoutOrder = 1,
-			},
-			Cryo.Dictionary.join({
-				uiListLayout = e("UIListLayout", {
-					Padding = UDim.new(0, PluginEnum.PaddingVertical),
-					HorizontalAlignment = Enum.HorizontalAlignment.Left,
-					SortOrder = Enum.SortOrder.LayoutOrder,
-					HorizontalFlex = Enum.UIFlexAlignment.Fill
-				}),
-			}, pieceComponents)
-		)	
-	})
+		})}, instanceWirers, pieceComponents)
+	)
 end
 
 function Widget:renderPlayground()
