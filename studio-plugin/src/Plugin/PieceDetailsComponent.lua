@@ -1,5 +1,5 @@
 --!strict
-local Packages = script:FindFirstAncestor("PhotoshopIntegration").Packages
+local Packages = script:FindFirstAncestor("Freeway").Packages
 local React = require(Packages.React)
 local Cryo = require(Packages.Cryo)
 

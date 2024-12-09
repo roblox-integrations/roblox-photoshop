@@ -1,4 +1,4 @@
-# photoshop-integration
+# Freeway
 
 **Studio Plugin Iteration Workflow**
 
@@ -9,13 +9,13 @@ Plugin development requires [Rojo](https://rojo.space/docs/v7/getting-started/in
 To build this plugin to your local plugins folder, run this in a terminal:
 
 ```bash
-rojo build -p PhotoshopIntegration.rbxm
+rojo build -p Freeway.rbxm
 ```
 
 If you want the plugin to rebuild on save, include the "--watch" argument:
 
 ```bash
-rojo build -p PhotoshopIntegration.rbxm --watch
+rojo build -p Freeway.rbxm --watch
 ```
 
 For more help, check out [the Rojo documentation](https://rojo.space/docs).

@@ -1,7 +1,7 @@
 local ContentProvider = game:GetService("ContentProvider")
 --!strict
-local PhotoshopIntegration = script:FindFirstAncestor("PhotoshopIntegration")
-local Packages = PhotoshopIntegration.Packages
+local Freeway = script:FindFirstAncestor("Freeway")
+local Packages = Freeway.Packages
 
 local Cryo = require(Packages.Cryo)
 

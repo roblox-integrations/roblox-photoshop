@@ -1,5 +1,5 @@
-local PhotoshopIntegration = script:FindFirstAncestor("PhotoshopIntegration")
-local Packages = PhotoshopIntegration.Packages
+local Freeway = script:FindFirstAncestor("Freeway")
+local Packages = Freeway.Packages
 
 local ReactRoblox = require(Packages.ReactRoblox)
 local React = require(Packages.React)

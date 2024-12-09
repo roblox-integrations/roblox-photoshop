@@ -1,5 +1,5 @@
-local PhotoshopIntegration = script:FindFirstAncestor("PhotoshopIntegration")
-local Packages = PhotoshopIntegration.Packages
+local Freeway = script:FindFirstAncestor("Freeway")
+local Packages = Freeway.Packages
 
 local React = require(Packages.React)
 
@@ -21,7 +21,7 @@ function App:init()
 end
 
 function App:render()
-	local pluginName = "RonRon Asset Sync"
+	local pluginName = "Freeway Asset Sync"
 
 	return e(StudioPluginContext.Provider, {
 		value = self.props.plugin,
@@ -53,8 +53,8 @@ function App:render()
 			widget = e(Widget),
 		}),
 		sharedToolbarButton = e(StudioSharedToolbar, {
-			combinerName = "Roblox-Integration-Toolbar",
-			toolbarName = "RonRon",
+			combinerName = "Freeway-Toolbar",
+			toolbarName = "Freeway",
 			buttonName = "Assets Sync",
 			buttonIcon = "rbxassetid://103039951720673",
 			buttonTooltip = "Toggle the Asset Sync widget",

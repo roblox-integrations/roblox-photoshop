@@ -2,8 +2,8 @@ if not plugin then
 	return
 end
 
-local PhotoshopIntegration = script:FindFirstAncestor("PhotoshopIntegration")
-local Packages = PhotoshopIntegration.Packages
+local Freeway = script:FindFirstAncestor("Freeway")
+local Packages = Freeway.Packages
 
 local React = require(Packages.React)
 local ReactRoblox = require(Packages.ReactRoblox)
