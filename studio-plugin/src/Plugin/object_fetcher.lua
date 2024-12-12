@@ -12,11 +12,15 @@ local POLL_RATE = 3 -- seconds
 
 local BASE_URL = 'http://localhost:3000'
 
+
+
+
 local object_fetcher = {
     cache = {},
     pieces = {}, 
     pieces_map = {}, 
-    piece_is_wired = {}
+    piece_is_wired = {},
+    download_queue = {}
 }
 
 export type Piece = {
@@ -64,6 +68,65 @@ function object_fetcher:update_instance_if_needed(instance)
     update_wired_instances(instance, wires)
 end 
 
+
+
+local function fetchFromNetwork(piece)
+    local url = BASE_URL .. '/api/pieces/' .. piece.id .. '/raw'
+    print('fetchFromNetwork URL: ' .. url)
+    local res = HttpService:GetAsync(url)
+    local json = HttpService:JSONDecode(res)
+
+    
+    
+    if piece.type == 'image' then
+        local width = json['width']
+        local height = json['height']
+        local b64string = json['bitmap']
+        local options = { Size = Vector2.new(width, height) }
+        local editableImage = AssetService:CreateEditableImage(options)
+        local decodedData = base64.decode(buffer.fromstring(b64string))
+        editableImage:WritePixelsBuffer(Vector2.zero, editableImage.Size, decodedData)
+        local content = Content.fromObject(editableImage)
+        object_fetcher.cache[piece.id] = {object = content, hash = piece.hash}
+        return content
+    end
+    if piece.type == 'mesh' then
+        local b64string = json['base64']
+        local decodedData = base64.decode(buffer.fromstring(b64string))
+        local meshString = buffer.tostring(decodedData)
+        local mesh = HttpService:JSONDecode(meshString)
+        local em = RbxToEditableMesh(mesh)
+        object_fetcher.cache[piece.id] = {object = em, hash = piece.hash}
+        print('cached a mesh')
+
+    end
+
+    print('!piece type not implemented:', piece.type)
+end 
+
+-- download queue handler
+
+coroutine.wrap(function ()
+    while true do
+        if #object_fetcher.download_queue > 0 then  
+            local piece = object_fetcher.download_queue[1]
+            local cached =  object_fetcher.cache[piece.id]
+            if cached == nil or cached.hash ~= piece.hash then 
+                local status, err = pcall(fetchFromNetwork, piece)    
+                if not status then
+                    print('error fetchFromNetwork:', err)
+                end 
+            else 
+                print('skipping download, have cached version ')
+            end
+
+            table.remove(object_fetcher.download_queue, 1)
+        else 
+            task.wait(0.1)
+        end
+    end 
+end)()
+
 coroutine.wrap(function()
 
     while true do
@@ -108,12 +171,16 @@ coroutine.wrap(function()
             end
             process_pieces(tmp_pieces_map)
         end
-        local status, err = pcall(fetchPiecesFromNetwork)    
-        if not status then
-            -- MI bubble the error up, display in UI
-            print('error fetching pieces', err)
+
+        local RunService = game:GetService("RunService")
+        if not RunService:IsRunning() then 
+            local status, err = pcall(fetchPiecesFromNetwork)    
+            if not status then
+                -- MI bubble the error up, display in UI
+                print('error fetching pieces', err)
+            end
+            print('tick, is running ', RunService:IsRunning(), RunService:IsRunMode()) -- TODO MI Why it doesn't detect is running?
         end
-        print('tick')
         task.wait(POLL_RATE)
     
     end
@@ -162,46 +229,9 @@ function object_fetcher:fetch(piece)
         return obj.object 
     end
 
-    
-
-    local function fetchFromNetwork()
-        local url = BASE_URL .. '/api/pieces/' .. piece.id .. '/raw'
-        print('fetchFromNetwork URL: ' .. url)
-        local res = HttpService:GetAsync(url)
-        local json = HttpService:JSONDecode(res)
-
-        
-        if piece.type == 'image' then
-            local width = json['width']
-            local height = json['height']
-            local b64string = json['bitmap']
-            local options = { Size = Vector2.new(width, height) }
-            local editableImage = AssetService:CreateEditableImage(options)
-            local decodedData = base64.decode(buffer.fromstring(b64string))
-            editableImage:WritePixelsBuffer(Vector2.zero, editableImage.Size, decodedData)
-            local content = Content.fromObject(editableImage)
-            self.cache[piece.id] = {object = content, hash = piece.hash}
-            return content
-        end
-        if piece.type == 'mesh' then
-            local b64string = json['base64']
-            local decodedData = base64.decode(buffer.fromstring(b64string))
-            local meshString = buffer.tostring(decodedData)
-            local mesh = HttpService:JSONDecode(meshString)
-            local em = RbxToEditableMesh(mesh)
-            self.cache[piece.id] = {object = em, hash = piece.hash}
-            print('cached a mesh')
-
-        end
-
-        print('!piece type not implemented:', piece.type)
-    end 
-    
-        
-    local status, err = pcall(fetchFromNetwork)    
-    if not status then
-        print('error fetchFromNetwork:', err)
-    end
+    print('add piece to queue: ', piece.id)
+    table.insert(self.download_queue, piece)
+    return nil
 
 
 end

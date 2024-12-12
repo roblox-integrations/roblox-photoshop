@@ -2,6 +2,13 @@ if not plugin then
 	return
 end
 
+local RunService = game:GetService("RunService")
+
+if RunService:IsRunning() then
+	print('Don\'t run Freeway in play mode')
+	return
+end
+
 local Freeway = script:FindFirstAncestor("Freeway")
 local Packages = Freeway.Packages
 
