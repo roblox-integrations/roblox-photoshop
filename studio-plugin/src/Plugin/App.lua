@@ -21,7 +21,7 @@ function App:init()
 end
 
 function App:render()
-	local pluginName = "Freeway Asset Sync"
+	local pluginName = "Freeway"
 
 	return e(StudioPluginContext.Provider, {
 		value = self.props.plugin,
@@ -55,7 +55,7 @@ function App:render()
 		sharedToolbarButton = e(StudioSharedToolbar, {
 			combinerName = "Freeway-Toolbar",
 			toolbarName = "Freeway",
-			buttonName = "Assets Sync",
+			buttonName = "Freeway",
 			buttonIcon = "rbxassetid://103039951720673",
 			buttonTooltip = "Toggle the Asset Sync widget",
 			buttonEnabled = true,
