@@ -6,7 +6,7 @@ local Cryo = require(Packages.Cryo)
 local e = React.createElement
 local Selection = game:GetService("Selection")
 local CollectionService = game:GetService("CollectionService")
-
+local ChangeHistoryService = game:GetService("ChangeHistoryService")
 local PieceDetailsComponent = React.Component:extend("PieceDetailsComponent")
 local WireableProperties = require(script.Parent.WireableProperties)
 
@@ -154,18 +154,23 @@ function PieceDetailsComponent:buildInstanceWirerComponent(i, wirerModel, showSe
 			combinedPropertyState = wirerModel.combinedPropertyState,
 
 			onClick = function(instances, propertyName)
+				local recordingId = ChangeHistoryService:TryBeginRecording('wire')
 				for _, instance in instances do
 					-- print('wire instance', instance, self.props.piece.id, propertyName)
 					t_u:wire_instance(instance, self.props.piece.id, propertyName)
 					self.props.fetcher:update_instance_if_needed(instance)
 				end
+				ChangeHistoryService:FinishRecording(recordingId, Enum.FinishRecordingOperation.Commit)
 			end, 
 			onUwireClick = function(instances, propertyName) 
+				local recordingId = ChangeHistoryService:TryBeginRecording('wire')
+
 				for _, instance in instances do
 					-- print('unwire all')
 					t_u:unwire_instance(instance, propertyName)
 				end
-				
+				ChangeHistoryService:FinishRecording(recordingId, Enum.FinishRecordingOperation.Commit)
+
 			end
 		})
 end
