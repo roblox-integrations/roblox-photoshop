@@ -1,4 +1,4 @@
 # install
 
 ````
-pnpm i
+npm i
